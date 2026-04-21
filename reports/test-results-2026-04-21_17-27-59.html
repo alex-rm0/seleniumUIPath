@@ -1,0 +1,172 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>PharmaNova QA Automation Report</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 24px; }
+      .kpi { display: inline-block; margin-right: 16px; }
+      table { border-collapse: collapse; width: 100%; margin-top: 16px; }
+      th, td { border: 1px solid #d0d0d0; padding: 8px; text-align: left; }
+      th { background: #f4f4f4; }
+      .PASS { color: #0b7a0b; font-weight: 700; }
+      .FAIL { color: #c62828; font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <h1>PharmaNova - Selenium + UiPath Demo</h1>
+    <div class="kpi"><strong>Total:</strong> 17</div>
+    <div class="kpi"><strong>Passed:</strong> 16</div>
+    <div class="kpi"><strong>Failed:</strong> 1</div>
+    <div class="kpi"><strong>Duration (ms):</strong> 105536</div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Status</th>
+          <th>Duration (ms)</th>
+          <th>Details</th>
+          <th>Evidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>TC001</td>
+          <td>Valid QA Login</td>
+          <td>PASS</td>
+          <td>5982</td>
+          <td>Batch Release Portal Access validated successfully.</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>TC002</td>
+          <td>Invalid QA Login</td>
+          <td>PASS</td>
+          <td>9626</td>
+          <td>Batch Release Portal Access validated successfully.</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>TC003</td>
+          <td>Valid login followed by logout</td>
+          <td>PASS</td>
+          <td>9107</td>
+          <td>Batch Release Portal Access validated successfully.</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>TC004</td>
+          <td>Login with empty username</td>
+          <td>PASS</td>
+          <td>4895</td>
+          <td>Batch Release Portal Access validated successfully.</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>TC005</td>
+          <td>Login with empty password</td>
+          <td>PASS</td>
+          <td>5613</td>
+          <td>Batch Release Portal Access validated successfully.</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>TC006</td>
+          <td>Login with empty username and password</td>
+          <td>PASS</td>
+          <td>2694</td>
+          <td>Batch Release Portal Access validated successfully.</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>TC007</td>
+          <td>Stay logged out after browser back</td>
+          <td>PASS</td>
+          <td>5492</td>
+          <td>Batch Release Portal Access validated successfully.</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>TC008</td>
+          <td>Navigate from Markets to Locations</td>
+          <td>PASS</td>
+          <td>5109</td>
+          <td>Side Menu Navigation validated successfully.</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>TC009</td>
+          <td>Do not duplicate Markets tab</td>
+          <td>FAIL</td>
+          <td>15161</td>
+          <td>Tab Management failed. Wait timed out after 10126ms</td>
+          <td><a href="../reports/screenshots/TC009_1776788831305.png">Open</a></td>
+        </tr>
+        <tr>
+          <td>TC010</td>
+          <td>Switch between Markets and Locations tabs</td>
+          <td>PASS</td>
+          <td>6945</td>
+          <td>Tab Management validated successfully.</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>TC011</td>
+          <td>Logout with Markets and Locations tabs open</td>
+          <td>PASS</td>
+          <td>6277</td>
+          <td>Session Management validated successfully.</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>TC012</td>
+          <td>Markets table loads data</td>
+          <td>PASS</td>
+          <td>3673</td>
+          <td>Markets validated successfully.</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>TC013</td>
+          <td>Refresh Markets table</td>
+          <td>PASS</td>
+          <td>5160</td>
+          <td>Markets validated successfully.</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>TC014</td>
+          <td>Open Western Europe market edit tab</td>
+          <td>PASS</td>
+          <td>4419</td>
+          <td>Markets validated successfully.</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>TC015</td>
+          <td>Locations table loads data</td>
+          <td>PASS</td>
+          <td>4355</td>
+          <td>Locations validated successfully.</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>TC016</td>
+          <td>Refresh Locations table</td>
+          <td>PASS</td>
+          <td>5452</td>
+          <td>Locations validated successfully.</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>TC017</td>
+          <td>Open Porto de Marselha location edit tab</td>
+          <td>PASS</td>
+          <td>5576</td>
+          <td>Locations validated successfully.</td>
+          <td>-</td>
+        </tr></tbody>
+    </table>
+  </body>
+</html>

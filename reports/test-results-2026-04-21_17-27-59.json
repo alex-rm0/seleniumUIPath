@@ -1,0 +1,122 @@
+[
+  {
+    "id": "TC001",
+    "title": "Valid QA Login",
+    "status": "PASS",
+    "durationMs": 5982,
+    "details": "Batch Release Portal Access validated successfully."
+  },
+  {
+    "id": "TC002",
+    "title": "Invalid QA Login",
+    "status": "PASS",
+    "durationMs": 9626,
+    "details": "Batch Release Portal Access validated successfully."
+  },
+  {
+    "id": "TC003",
+    "title": "Valid login followed by logout",
+    "status": "PASS",
+    "durationMs": 9107,
+    "details": "Batch Release Portal Access validated successfully."
+  },
+  {
+    "id": "TC004",
+    "title": "Login with empty username",
+    "status": "PASS",
+    "durationMs": 4895,
+    "details": "Batch Release Portal Access validated successfully."
+  },
+  {
+    "id": "TC005",
+    "title": "Login with empty password",
+    "status": "PASS",
+    "durationMs": 5613,
+    "details": "Batch Release Portal Access validated successfully."
+  },
+  {
+    "id": "TC006",
+    "title": "Login with empty username and password",
+    "status": "PASS",
+    "durationMs": 2694,
+    "details": "Batch Release Portal Access validated successfully."
+  },
+  {
+    "id": "TC007",
+    "title": "Stay logged out after browser back",
+    "status": "PASS",
+    "durationMs": 5492,
+    "details": "Batch Release Portal Access validated successfully."
+  },
+  {
+    "id": "TC008",
+    "title": "Navigate from Markets to Locations",
+    "status": "PASS",
+    "durationMs": 5109,
+    "details": "Side Menu Navigation validated successfully."
+  },
+  {
+    "id": "TC009",
+    "title": "Do not duplicate Markets tab",
+    "status": "FAIL",
+    "durationMs": 15161,
+    "details": "Tab Management failed. Wait timed out after 10126ms",
+    "screenshotPath": "reports\\screenshots\\TC009_1776788831305.png"
+  },
+  {
+    "id": "TC010",
+    "title": "Switch between Markets and Locations tabs",
+    "status": "PASS",
+    "durationMs": 6945,
+    "details": "Tab Management validated successfully."
+  },
+  {
+    "id": "TC011",
+    "title": "Logout with Markets and Locations tabs open",
+    "status": "PASS",
+    "durationMs": 6277,
+    "details": "Session Management validated successfully."
+  },
+  {
+    "id": "TC012",
+    "title": "Markets table loads data",
+    "status": "PASS",
+    "durationMs": 3673,
+    "details": "Markets validated successfully."
+  },
+  {
+    "id": "TC013",
+    "title": "Refresh Markets table",
+    "status": "PASS",
+    "durationMs": 5160,
+    "details": "Markets validated successfully."
+  },
+  {
+    "id": "TC014",
+    "title": "Open Western Europe market edit tab",
+    "status": "PASS",
+    "durationMs": 4419,
+    "details": "Markets validated successfully."
+  },
+  {
+    "id": "TC015",
+    "title": "Locations table loads data",
+    "status": "PASS",
+    "durationMs": 4355,
+    "details": "Locations validated successfully."
+  },
+  {
+    "id": "TC016",
+    "title": "Refresh Locations table",
+    "status": "PASS",
+    "durationMs": 5452,
+    "details": "Locations validated successfully."
+  },
+  {
+    "id": "TC017",
+    "title": "Open Porto de Marselha location edit tab",
+    "status": "PASS",
+    "durationMs": 5576,
+    "details": "Locations validated successfully."
+  }
+]
