@@ -1,0 +1,52 @@
+PS C:\Users\alexa\.vscode\projects\Selenium + UIPath> npm run crawl
+
+> pharmanova-qa-automation@1.0.0 crawl
+> ts-node src/crawler/crawlerMain.ts
+
+=== PharmaNova UI Element Crawler ===
+Target: https://dev.nexus.shipperform.devlop.systems/#/login
+
+[driverFactory] using chromedriver path: C:\Users\alexa\.vscode\projects\Selenium + UIPath\node_modules\chromedriver\lib\chromedriver\chromedriver.exe
+
+DevTools listening on ws://127.0.0.1:55989/devtools/browser/7f94b98f-70b3-4429-a0b4-46e361be7707
+  [crawl] extracting: Login (https://dev.nexus.shipperform.devlop.systems/#/login)
+  [debug] DOM elements: 103 total, 2 inputs, 6 buttons
+  [warn] extraction script returned null
+  [crawl] found 0 element(s) on "Login"
+  [crawl] logging in...
+  [crawl] login successful
+  [crawl] extracting: Dashboard (https://dev.nexus.shipperform.devlop.systems/#/home)
+  [debug] DOM elements: 274 total, 0 inputs, 13 buttons
+  [warn] extraction script returned null
+  [crawl] found 0 element(s) on "Dashboard"
+  [crawl] extracting: Markets (https://dev.nexus.shipperform.devlop.systems/#/home/markets)
+[27180:19768:0421/175012.459:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
+[27180:19768:0421/175012.459:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
+  [debug] DOM elements: 585 total, 28 inputs, 28 buttons
+[27180:19768:0421/175012.474:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
+  [warn] extraction script returned null
+  [crawl] found 0 element(s) on "Markets"
+  [crawl] extracting: Markets - Edit (Western Europe) (https://dev.nexus.shipperform.devlop.systems/#/home/markets/marketConfigCrud)
+  [debug] DOM elements: 318 total, 2 inputs, 16 buttons
+  [warn] extraction script returned null
+  [crawl] found 0 element(s) on "Markets - Edit (Western Europe)"
+  [crawl] extracting: Locations (https://dev.nexus.shipperform.devlop.systems/#/home/locations)
+  [debug] DOM elements: 879 total, 42 inputs, 35 buttons
+  [warn] extraction script returned null
+  [crawl] found 0 element(s) on "Locations"
+  [crawl] extracting: Locations - Edit (Porto de Marselha) (https://dev.nexus.shipperform.devlop.systems/#/home/locations/locationConfigCrud)
+  [debug] DOM elements: 412 total, 8 inputs, 21 buttons
+  [warn] extraction script returned null
+  [crawl] found 0 element(s) on "Locations - Edit (Porto de Marselha)"
+
+=== Crawl complete ===
+Pages crawled : 6
+Total elements: 0
+Output        : C:\Users\alexa\.vscode\projects\Selenium + UIPath\reports\element-map.json
+
+  Login: 0 element(s)
+  Dashboard: 0 element(s)
+  Markets: 0 element(s)
+  Markets - Edit (Western Europe): 0 element(s)
+  Locations: 0 element(s)
+  Locations - Edit (Porto de Marselha): 0 element(s)
