@@ -1,0 +1,16 @@
+[
+  {
+    "id": "TC001",
+    "title": "Valid QA Login",
+    "status": "PASS",
+    "durationMs": 2609,
+    "details": "Batch Release Portal Access validated successfully."
+  },
+  {
+    "id": "TC002",
+    "title": "Invalid QA Login",
+    "status": "PASS",
+    "durationMs": 754,
+    "details": "Batch Release Portal Access validated successfully."
+  }
+]

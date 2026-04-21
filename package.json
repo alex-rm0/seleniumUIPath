@@ -1,0 +1,30 @@
+{
+  "name": "pharmanova-qa-automation",
+  "version": "1.0.0",
+  "description": "UiPath and Selenium TypeScript demo for pharmaceutical QA automation",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "ts-node src/main.ts",
+    "clean": "powershell -Command \"if (Test-Path dist) { Remove-Item -Recurse -Force dist }; if (Test-Path reports) { Remove-Item -Recurse -Force reports }\""
+  },
+  "keywords": [
+    "selenium",
+    "uipath",
+    "typescript",
+    "qa",
+    "pharma"
+  ],
+  "author": "Demo Team",
+  "license": "MIT",
+  "dependencies": {
+    "chromedriver": "^147.0.3",
+    "selenium-webdriver": "^4.43.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/selenium-webdriver": "^4.35.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.2"
+  }
+}

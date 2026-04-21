@@ -1,0 +1,240 @@
+[
+  {
+    "id": "TC001",
+    "title": "Valid QA Login",
+    "processArea": "Batch Release Portal Access",
+    "input": {
+      "username": "sandrodev",
+      "password": "Sandrodev-123"
+    },
+    "expected": {
+      "shouldPass": true,
+      "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!"
+    }
+  },
+  {
+    "id": "TC002",
+    "title": "Invalid QA Login",
+    "processArea": "Batch Release Portal Access",
+    "input": {
+      "username": "sandrodev",
+      "password": "WrongPassword"
+    },
+    "expected": {
+      "shouldPass": false,
+      "expectedAlertType": "success",
+      "expectedMessage": "Sucesso\nPrecisa de confirmar o seu email"
+    }
+  },
+  {
+    "id": "TC003",
+    "title": "Valid login followed by logout",
+    "processArea": "Batch Release Portal Access",
+    "input": {
+      "username": "sandrodev",
+      "password": "Sandrodev-123"
+    },
+    "expected": {
+      "shouldPass": true,
+      "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
+      "shouldLogout": true
+    }
+  },
+  {
+    "id": "TC004",
+    "title": "Login with empty username",
+    "processArea": "Batch Release Portal Access",
+    "input": {
+      "username": "",
+      "password": "Sandrodev-123"
+    },
+    "expected": {
+      "shouldPass": false,
+      "expectedAlertType": "error",
+      "expectedMessage": "Erro\nOcoreu um Erro! Tente Novamente mais Tarde"
+    }
+  },
+  {
+    "id": "TC005",
+    "title": "Login with empty password",
+    "processArea": "Batch Release Portal Access",
+    "input": {
+      "username": "sandrodev",
+      "password": ""
+    },
+    "expected": {
+      "shouldPass": false,
+      "expectedAlertType": "error",
+      "expectedMessage": "Erro\nOcoreu um Erro! Tente Novamente mais Tarde"
+    }
+  },
+  {
+    "id": "TC006",
+    "title": "Login with empty username and password",
+    "processArea": "Batch Release Portal Access",
+    "input": {
+      "username": "",
+      "password": ""
+    },
+    "expected": {
+      "shouldPass": false,
+      "expectedAlertType": "error",
+      "expectedMessage": "Erro\nOcoreu um Erro! Tente Novamente mais Tarde"
+    }
+  },
+  {
+    "id": "TC007",
+    "title": "Stay logged out after browser back",
+    "processArea": "Batch Release Portal Access",
+    "input": {
+      "username": "sandrodev",
+      "password": "Sandrodev-123"
+    },
+    "expected": {
+      "shouldPass": true,
+      "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
+      "shouldLogout": true,
+      "shouldStayLoggedOutAfterBack": true
+    }
+  },
+  {
+    "id": "TC008",
+    "title": "Navigate from Markets to Locations",
+    "processArea": "Side Menu Navigation",
+    "input": {
+      "username": "sandrodev",
+      "password": "Sandrodev-123"
+    },
+    "expected": {
+      "shouldPass": true,
+      "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
+      "navigationFlow": "marketsToLocations"
+    }
+  },
+  {
+    "id": "TC009",
+    "title": "Do not duplicate Markets tab",
+    "processArea": "Tab Management",
+    "input": {
+      "username": "sandrodev",
+      "password": "Sandrodev-123"
+    },
+    "expected": {
+      "shouldPass": true,
+      "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
+      "navigationFlow": "noDuplicateMarketsTab"
+    }
+  },
+  {
+    "id": "TC010",
+    "title": "Switch between Markets and Locations tabs",
+    "processArea": "Tab Management",
+    "input": {
+      "username": "sandrodev",
+      "password": "Sandrodev-123"
+    },
+    "expected": {
+      "shouldPass": true,
+      "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
+      "navigationFlow": "switchMarketsAndLocationsTabs"
+    }
+  },
+  {
+    "id": "TC011",
+    "title": "Logout with Markets and Locations tabs open",
+    "processArea": "Session Management",
+    "input": {
+      "username": "sandrodev",
+      "password": "Sandrodev-123"
+    },
+    "expected": {
+      "shouldPass": true,
+      "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
+      "navigationFlow": "logoutWithOpenTabs"
+    }
+  },
+  {
+    "id": "TC012",
+    "title": "Markets table loads data",
+    "processArea": "Markets",
+    "input": {
+      "username": "sandrodev",
+      "password": "Sandrodev-123"
+    },
+    "expected": {
+      "shouldPass": true,
+      "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
+      "navigationFlow": "marketsTableLoads"
+    }
+  },
+  {
+    "id": "TC013",
+    "title": "Refresh Markets table",
+    "processArea": "Markets",
+    "input": {
+      "username": "sandrodev",
+      "password": "Sandrodev-123"
+    },
+    "expected": {
+      "shouldPass": true,
+      "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
+      "navigationFlow": "refreshMarketsTable"
+    }
+  },
+  {
+    "id": "TC014",
+    "title": "Open Western Europe market edit tab",
+    "processArea": "Markets",
+    "input": {
+      "username": "sandrodev",
+      "password": "Sandrodev-123"
+    },
+    "expected": {
+      "shouldPass": true,
+      "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
+      "navigationFlow": "editWesternEuropeMarket"
+    }
+  },
+  {
+    "id": "TC015",
+    "title": "Locations table loads data",
+    "processArea": "Locations",
+    "input": {
+      "username": "sandrodev",
+      "password": "Sandrodev-123"
+    },
+    "expected": {
+      "shouldPass": true,
+      "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
+      "navigationFlow": "locationsTableLoads"
+    }
+  },
+  {
+    "id": "TC016",
+    "title": "Refresh Locations table",
+    "processArea": "Locations",
+    "input": {
+      "username": "sandrodev",
+      "password": "Sandrodev-123"
+    },
+    "expected": {
+      "shouldPass": true,
+      "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
+      "navigationFlow": "refreshLocationsTable"
+    }
+  },
+  {
+    "id": "TC017",
+    "title": "Open Porto de Marselha location edit tab",
+    "processArea": "Locations",
+    "input": {
+      "username": "sandrodev",
+      "password": "Sandrodev-123"
+    },
+    "expected": {
+      "shouldPass": true,
+      "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
+      "navigationFlow": "editPortoMarselhaLocation"
+    }
+  }
+]
