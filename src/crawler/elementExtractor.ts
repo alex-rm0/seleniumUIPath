@@ -24,158 +24,150 @@ const INTERACTIVE_SELECTORS = [
   "[role='row']",
 ].join(", ");
 
-interface RawElement {
-  tag: string;
-  type: string | null;
-  role: string | null;
-  id: string | null;
-  name: string | null;
-  placeholder: string | null;
-  ariaLabel: string | null;
-  ariaDescribedBy: string | null;
-  testId: string | null;
-  text: string | null;
-  value: string | null;
-  href: string | null;
-  classes: string[];
-  cssSelector: string;
-  xpath: string;
-  offsetWidth: number;
-  offsetHeight: number;
-}
-
 export async function extractElements(driver: WebDriver): Promise<ExtractedElement[]> {
-  const rawElements = await driver.executeScript<RawElement[] | null>(
-    extractElementsScript,
-    INTERACTIVE_SELECTORS
+  // Diagnostic: verify basic script execution and element presence
+  const diagnostics = await driver.executeScript<{ total: number; inputs: number; buttons: number } | null>(
+    "return { total: document.querySelectorAll('*').length, inputs: document.querySelectorAll('input').length, buttons: document.querySelectorAll('button').length };"
   );
 
-  if (!rawElements || !Array.isArray(rawElements)) return [];
+  if (!diagnostics) {
+    console.warn("  [warn] diagnostic script returned null — skipping page");
+    return [];
+  }
 
-  return rawElements
-    .filter((el) => el.offsetWidth > 0 && el.offsetHeight > 0)
+  console.log(`  [debug] DOM elements: ${diagnostics.total} total, ${diagnostics.inputs} inputs, ${diagnostics.buttons} buttons`);
+
+  if (diagnostics.inputs === 0 && diagnostics.buttons === 0) {
+    console.warn("  [warn] no inputs or buttons found on page — possible timing issue");
+    return [];
+  }
+
+  // Main extraction — returns primitives only (strings, numbers, null) for safe serialization
+  const raw = await driver.executeScript<string | null>(extractElementsScript, INTERACTIVE_SELECTORS);
+
+  if (!raw) {
+    console.warn("  [warn] extraction script returned null");
+    return [];
+  }
+
+  let parsed: RawElement[];
+  try {
+    parsed = JSON.parse(raw) as RawElement[];
+  } catch (e) {
+    console.warn("  [warn] failed to parse extraction result:", e);
+    return [];
+  }
+
+  if (!Array.isArray(parsed)) return [];
+
+  return parsed
+    .filter((el) => el.w > 0 && el.h > 0)
     .map((el) => ({
       tag: el.tag,
       type: el.type,
       role: el.role,
       id: el.id,
       name: el.name,
-      placeholder: el.placeholder,
-      ariaLabel: el.ariaLabel,
-      ariaDescribedBy: el.ariaDescribedBy,
-      testId: el.testId,
+      placeholder: el.ph,
+      ariaLabel: el.al,
+      ariaDescribedBy: el.adb,
+      testId: el.tid,
       text: el.text,
-      value: el.value,
+      value: el.val,
       href: el.href,
-      classes: el.classes,
-      cssSelector: el.cssSelector,
-      xpath: el.xpath,
+      classes: el.cls,
+      cssSelector: el.css,
+      xpath: el.xp,
       interactable: true,
     }));
 }
 
-// NOTE: this string is executed verbatim in the browser via Selenium executeScript.
-// Avoid complex regex literals and multi-level backslash escaping inside template literals.
-// All regex here use simple patterns safe inside a JS string.
-const extractElementsScript = `
-(function(selectors) {
-  try {
+interface RawElement {
+  tag: string;
+  type: string | null;
+  role: string | null;
+  id: string | null;
+  name: string | null;
+  ph: string | null;
+  al: string | null;
+  adb: string | null;
+  tid: string | null;
+  text: string | null;
+  val: string | null;
+  href: string | null;
+  cls: string[];
+  css: string;
+  xp: string;
+  w: number;
+  h: number;
+}
 
-    function getXPath(el) {
+// The script is serialized to JSON and returned as a string to avoid
+// Selenium serialization quirks with complex nested objects.
+const extractElementsScript = `
+(function(sel) {
+  try {
+    function xp(el) {
       try {
-        var id = el.getAttribute ? el.getAttribute('id') : null;
+        var id = el.getAttribute('id');
         if (id) return '//*[@id="' + id + '"]';
-        var parts = [];
-        var node = el;
+        var parts = [], node = el;
         while (node && node.nodeType === 1) {
-          var index = 0;
-          var sib = node.previousSibling;
-          while (sib) {
-            if (sib.nodeType === 1 && sib.nodeName === node.nodeName) { index++; }
-            sib = sib.previousSibling;
-          }
-          var tag = node.nodeName.toLowerCase();
-          parts.unshift(index > 0 ? tag + '[' + (index + 1) + ']' : tag);
+          var idx = 0, sib = node.previousSibling;
+          while (sib) { if (sib.nodeType === 1 && sib.nodeName === node.nodeName) idx++; sib = sib.previousSibling; }
+          var t = node.nodeName.toLowerCase();
+          parts.unshift(idx > 0 ? t + '[' + (idx + 1) + ']' : t);
           node = node.parentNode;
         }
         return '/' + parts.join('/');
-      } catch (e) { return ''; }
+      } catch(e) { return ''; }
     }
 
-    function getCssSelector(el) {
+    function css(el) {
       try {
         var tag = el.tagName.toLowerCase();
         var id = el.getAttribute('id');
         if (id) return '[id="' + id + '"]';
-
-        var testId = el.getAttribute('data-testid');
-        if (testId) return '[data-testid="' + testId + '"]';
-
-        var ariaLabel = el.getAttribute('aria-label');
-        if (ariaLabel) return tag + '[aria-label="' + ariaLabel + '"]';
-
-        var type = el.getAttribute('type');
-        if (type) return tag + '[type="' + type + '"]';
-
+        var tid = el.getAttribute('data-testid');
+        if (tid) return '[data-testid="' + tid + '"]';
+        var cy = el.getAttribute('data-cy');
+        if (cy) return '[data-cy="' + cy + '"]';
+        var al = el.getAttribute('aria-label');
+        if (al) return tag + '[aria-label="' + al + '"]';
+        var tp = el.getAttribute('type');
+        if (tp) return tag + '[type="' + tp + '"]';
         var role = el.getAttribute('role');
         if (role) return tag + '[role="' + role + '"]';
-
-        var classes = [];
-        if (el.classList) {
-          for (var ci = 0; ci < el.classList.length && classes.length < 3; ci++) {
-            var cls = el.classList[ci];
-            if (cls.indexOf('css-') !== 0 && cls.indexOf('MuiBox') !== 0 && cls.indexOf('MuiGrid') !== 0) {
-              classes.push(cls);
-            }
-          }
-        }
-        if (classes.length > 0) return tag + '.' + classes.join('.');
-
         return tag;
-      } catch (e) {
-        return el.tagName ? el.tagName.toLowerCase() : 'unknown';
-      }
+      } catch(e) { return 'unknown'; }
     }
 
-    function truncate(str, max) {
-      if (str === null || str === undefined) return null;
-      str = String(str).trim();
-      if (!str) return null;
-      return str.length > max ? str.substring(0, max) + '...' : str;
+    function trunc(s, max) {
+      if (s === null || s === undefined) return null;
+      s = String(s).trim();
+      if (!s) return null;
+      return s.length > max ? s.substring(0, max) + '...' : s;
     }
 
-    function getClasses(el) {
-      var result = [];
-      if (el.classList) {
-        for (var i = 0; i < el.classList.length; i++) result.push(el.classList[i]);
-      }
-      return result;
+    function cls(el) {
+      var r = [];
+      if (el.classList) for (var i = 0; i < el.classList.length; i++) r.push(el.classList[i]);
+      return r;
     }
 
-    var seen = new Set();
+    var nodes = document.querySelectorAll(sel);
+    var seen = {};
     var results = [];
-    var nodes;
-
-    try {
-      nodes = document.querySelectorAll(selectors);
-    } catch (e) {
-      return [];
-    }
 
     for (var i = 0; i < nodes.length; i++) {
       try {
         var el = nodes[i];
-        var rect = el.getBoundingClientRect();
-        var key = el.tagName + '|' + (el.getAttribute('id') || '') + '|' + (el.getAttribute('aria-label') || '') + '|' + Math.round(rect.top) + '|' + Math.round(rect.left);
-        if (seen.has(key)) { continue; }
-        seen.add(key);
+        var key = el.tagName + (el.getAttribute('id') || '') + (el.getAttribute('aria-label') || '') + i;
+        if (seen[key]) continue;
+        seen[key] = 1;
 
-        var elValue = null;
-        try {
-          if (typeof el.value !== 'undefined' && el.value !== null) {
-            elValue = truncate(String(el.value), 80);
-          }
-        } catch (ve) {}
+        var val = null;
+        try { val = (el.value !== undefined) ? trunc(String(el.value), 80) : null; } catch(e) {}
 
         results.push({
           tag: el.tagName.toLowerCase(),
@@ -183,26 +175,25 @@ const extractElementsScript = `
           role: el.getAttribute('role'),
           id: el.getAttribute('id') || null,
           name: el.getAttribute('name') || null,
-          placeholder: el.getAttribute('placeholder') || null,
-          ariaLabel: el.getAttribute('aria-label') || null,
-          ariaDescribedBy: el.getAttribute('aria-describedby') || null,
-          testId: el.getAttribute('data-testid') || null,
-          text: truncate(el.innerText || el.textContent, 120),
-          value: elValue,
+          ph: el.getAttribute('placeholder') || null,
+          al: el.getAttribute('aria-label') || null,
+          adb: el.getAttribute('aria-describedby') || null,
+          tid: el.getAttribute('data-testid') || el.getAttribute('data-cy') || null,
+          text: trunc(el.innerText || el.textContent, 120),
+          val: val,
           href: el.getAttribute('href') || null,
-          classes: getClasses(el),
-          cssSelector: getCssSelector(el),
-          xpath: getXPath(el),
-          offsetWidth: el.offsetWidth || 0,
-          offsetHeight: el.offsetHeight || 0
+          cls: cls(el),
+          css: css(el),
+          xp: xp(el),
+          w: el.offsetWidth || 0,
+          h: el.offsetHeight || 0
         });
-      } catch (e) {}
+      } catch(e) {}
     }
 
-    return results;
-
-  } catch (e) {
-    return [];
+    return JSON.stringify(results);
+  } catch(e) {
+    return JSON.stringify([]);
   }
 })(arguments[0]);
 `;

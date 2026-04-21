@@ -1,0 +1,52 @@
+PS C:\Users\alexa\.vscode\projects\Selenium + UIPath> git pull
+remote: Enumerating objects: 13, done.
+remote: Counting objects: 100% (13/13), done.
+remote: Compressing objects: 100% (4/4), done.
+remote: Total 8 (delta 4), reused 8 (delta 4), pack-reused 0 (from 0)
+Unpacking objects: 100% (8/8), 2.34 KiB | 108.00 KiB/s, done.
+From https://github.com/alex-rm0/seleniumUIPath
+   859d419..24f962e  main       -> origin/main
+Updating 859d419..24f962e
+Fast-forward
+ ...ojects-Selenium-UIPath-npm-ru_1776789196702.txt | 31 +++++++++++++
+ src/crawler/elementExtractor.ts                    | 52 +++++++++++++---------
+ src/crawler/pageCrawler.ts                         |  1 -
+ 3 files changed, 61 insertions(+), 23 deletions(-)
+ create mode 100644 attached_assets/Pasted-PS-C-Users-alexa-vscode-projects-Selenium-UIPath-npm-ru_1776789196702.txt
+PS C:\Users\alexa\.vscode\projects\Selenium + UIPath> npm run crawl
+
+> pharmanova-qa-automation@1.0.0 crawl
+> ts-node src/crawler/crawlerMain.ts
+
+=== PharmaNova UI Element Crawler ===
+Target: https://dev.nexus.shipperform.devlop.systems/#/login
+
+[driverFactory] using chromedriver path: C:\Users\alexa\.vscode\projects\Selenium + UIPath\node_modules\chromedriver\lib\chromedriver\chromedriver.exe
+
+DevTools listening on ws://127.0.0.1:51850/devtools/browser/10ef920d-c881-4c29-8406-790771ee9c38
+  [crawl] extracting: Login (https://dev.nexus.shipperform.devlop.systems/#/login)
+  [crawl] found 0 element(s) on "Login"
+  [crawl] logging in...
+  [crawl] login successful
+  [crawl] extracting: Dashboard (https://dev.nexus.shipperform.devlop.systems/#/home)
+  [crawl] found 0 element(s) on "Dashboard"
+  [crawl] extracting: Markets (https://dev.nexus.shipperform.devlop.systems/#/home/markets)
+  [crawl] found 0 element(s) on "Markets"
+  [crawl] extracting: Markets - Edit (Western Europe) (https://dev.nexus.shipperform.devlop.systems/#/home/markets/marketConfigCrud)
+  [crawl] found 0 element(s) on "Markets - Edit (Western Europe)"
+  [crawl] extracting: Locations (https://dev.nexus.shipperform.devlop.systems/#/home/locations)
+  [crawl] found 0 element(s) on "Locations"
+  [crawl] extracting: Locations - Edit (Porto de Marselha) (https://dev.nexus.shipperform.devlop.systems/#/home/locations/locationConfigCrud)
+  [crawl] found 0 element(s) on "Locations - Edit (Porto de Marselha)"
+
+=== Crawl complete ===
+Pages crawled : 6
+Total elements: 0
+Output        : C:\Users\alexa\.vscode\projects\Selenium + UIPath\reports\element-map.json
+
+  Login: 0 element(s)
+  Dashboard: 0 element(s)
+  Markets: 0 element(s)
+  Markets - Edit (Western Europe): 0 element(s)
+  Locations: 0 element(s)
+  Locations - Edit (Porto de Marselha): 0 element(s)
