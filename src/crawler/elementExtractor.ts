@@ -45,10 +45,12 @@ interface RawElement {
 }
 
 export async function extractElements(driver: WebDriver): Promise<ExtractedElement[]> {
-  const rawElements = await driver.executeScript<RawElement[]>(
+  const rawElements = await driver.executeScript<RawElement[] | null>(
     extractElementsScript,
     INTERACTIVE_SELECTORS
   );
+
+  if (!rawElements || !Array.isArray(rawElements)) return [];
 
   return rawElements
     .filter((el) => el.offsetWidth > 0 && el.offsetHeight > 0)
@@ -74,89 +76,125 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
 
 const extractElementsScript = `
 (function(selectors) {
-  function getXPath(el) {
-    if (el.id) return '//*[@id="' + el.id + '"]';
-    var parts = [];
-    while (el && el.nodeType === Node.ELEMENT_NODE) {
-      var index = 0;
-      var sibling = el.previousSibling;
-      while (sibling) {
-        if (sibling.nodeType === Node.ELEMENT_NODE && sibling.nodeName === el.nodeName) index++;
-        sibling = sibling.previousSibling;
-      }
-      var tag = el.nodeName.toLowerCase();
-      parts.unshift(index > 0 ? tag + '[' + (index + 1) + ']' : tag);
-      el = el.parentNode;
+  try {
+
+    function getXPath(el) {
+      try {
+        if (el && el.id) return '//*[@id="' + el.id + '"]';
+        var parts = [];
+        var node = el;
+        while (node && node.nodeType === 1) {
+          var index = 0;
+          var sib = node.previousSibling;
+          while (sib) {
+            if (sib.nodeType === 1 && sib.nodeName === node.nodeName) index++;
+            sib = sib.previousSibling;
+          }
+          var tag = node.nodeName.toLowerCase();
+          parts.unshift(index > 0 ? tag + '[' + (index + 1) + ']' : tag);
+          node = node.parentNode;
+        }
+        return '/' + parts.join('/');
+      } catch(e) { return ''; }
     }
-    return '/' + parts.join('/');
-  }
 
-  function getCssSelector(el) {
-    var id = el.getAttribute('id');
-    if (id) return '#' + CSS.escape(id);
+    function escapeId(id) {
+      return id.replace(/([!"#$%&'()*+,./:;<=>?@[\\\\\\]^{|}~])/g, '\\\\$1');
+    }
 
-    var testId = el.getAttribute('data-testid');
-    if (testId) return '[data-testid="' + testId + '"]';
+    function getCssSelector(el) {
+      try {
+        var id = el.getAttribute('id');
+        if (id) return '#' + escapeId(id);
 
-    var ariaLabel = el.getAttribute('aria-label');
-    if (ariaLabel) return el.tagName.toLowerCase() + '[aria-label="' + ariaLabel + '"]';
+        var testId = el.getAttribute('data-testid');
+        if (testId) return '[data-testid="' + testId + '"]';
 
-    var type = el.getAttribute('type');
-    var tag = el.tagName.toLowerCase();
-    if (type) return tag + '[type="' + type + '"]';
+        var ariaLabel = el.getAttribute('aria-label');
+        if (ariaLabel) return el.tagName.toLowerCase() + '[aria-label="' + ariaLabel.replace(/"/g, '\\\\"') + '"]';
 
-    var role = el.getAttribute('role');
-    if (role) return tag + '[role="' + role + '"]';
+        var type = el.getAttribute('type');
+        var tag = el.tagName.toLowerCase();
+        if (type) return tag + '[type="' + type + '"]';
 
-    var classes = Array.from(el.classList)
-      .filter(function(c) { return !/^(css-|MuiBox|MuiGrid|makeStyles)/.test(c); })
-      .slice(0, 3);
-    if (classes.length > 0) return tag + '.' + classes.join('.');
+        var role = el.getAttribute('role');
+        if (role) return tag + '[role="' + role + '"]';
 
-    return tag;
-  }
+        var classes = [];
+        if (el.classList) {
+          for (var i = 0; i < el.classList.length; i++) {
+            var c = el.classList[i];
+            if (!/^(css-|MuiBox|MuiGrid|makeStyles)/.test(c)) classes.push(c);
+            if (classes.length >= 3) break;
+          }
+        }
+        if (classes.length > 0) return tag + '.' + classes.join('.');
 
-  function truncate(str, max) {
-    if (!str) return null;
-    str = str.trim().replace(/\\s+/g, ' ');
-    return str.length > max ? str.substring(0, max) + '...' : str;
-  }
+        return tag;
+      } catch(e) { return el.tagName ? el.tagName.toLowerCase() : 'unknown'; }
+    }
 
-  var seen = new Set();
-  var results = [];
-  var nodes = document.querySelectorAll(selectors);
+    function truncate(str, max) {
+      if (str === null || str === undefined) return null;
+      str = String(str).trim().replace(/\\s+/g, ' ');
+      if (!str) return null;
+      return str.length > max ? str.substring(0, max) + '...' : str;
+    }
 
-  nodes.forEach(function(el) {
+    function getClasses(el) {
+      var result = [];
+      if (el.classList) {
+        for (var i = 0; i < el.classList.length; i++) result.push(el.classList[i]);
+      }
+      return result;
+    }
+
+    var seen = new Set();
+    var results = [];
+    var nodes;
+
     try {
-      var rect = el.getBoundingClientRect();
-      var key = el.tagName + '|' + (el.getAttribute('id') || '') + '|' + (el.getAttribute('aria-label') || '') + '|' + Math.round(rect.top) + '|' + Math.round(rect.left);
-      if (seen.has(key)) return;
-      seen.add(key);
+      nodes = document.querySelectorAll(selectors);
+    } catch(e) {
+      return [];
+    }
 
-      var classes = Array.from(el.classList);
+    for (var i = 0; i < nodes.length; i++) {
+      try {
+        var el = nodes[i];
+        var rect = el.getBoundingClientRect();
+        var key = el.tagName + '|' + (el.getAttribute('id') || '') + '|' + (el.getAttribute('aria-label') || '') + '|' + Math.round(rect.top) + '|' + Math.round(rect.left);
+        if (seen.has(key)) continue;
+        seen.add(key);
 
-      results.push({
-        tag: el.tagName.toLowerCase(),
-        type: el.getAttribute('type'),
-        role: el.getAttribute('role'),
-        id: el.getAttribute('id') || null,
-        name: el.getAttribute('name') || null,
-        placeholder: el.getAttribute('placeholder') || null,
-        ariaLabel: el.getAttribute('aria-label') || null,
-        ariaDescribedBy: el.getAttribute('aria-describedby') || null,
-        testId: el.getAttribute('data-testid') || null,
-        text: truncate(el.innerText || el.textContent, 120),
-        value: el.value !== undefined ? truncate(el.value, 80) : null,
-        href: el.getAttribute('href') || null,
-        classes: classes,
-        cssSelector: getCssSelector(el),
-        xpath: getXPath(el),
-        offsetWidth: el.offsetWidth,
-        offsetHeight: el.offsetHeight,
-      });
-    } catch(e) {}
-  });
+        var elValue = null;
+        try { elValue = (el.value !== undefined && el.value !== null) ? truncate(String(el.value), 80) : null; } catch(e) {}
 
-  return results;
+        results.push({
+          tag: el.tagName.toLowerCase(),
+          type: el.getAttribute('type'),
+          role: el.getAttribute('role'),
+          id: el.getAttribute('id') || null,
+          name: el.getAttribute('name') || null,
+          placeholder: el.getAttribute('placeholder') || null,
+          ariaLabel: el.getAttribute('aria-label') || null,
+          ariaDescribedBy: el.getAttribute('aria-describedby') || null,
+          testId: el.getAttribute('data-testid') || null,
+          text: truncate(el.innerText || el.textContent, 120),
+          value: elValue,
+          href: el.getAttribute('href') || null,
+          classes: getClasses(el),
+          cssSelector: getCssSelector(el),
+          xpath: getXPath(el),
+          offsetWidth: el.offsetWidth || 0,
+          offsetHeight: el.offsetHeight || 0,
+        });
+      } catch(e) {}
+    }
+
+    return results;
+  } catch(e) {
+    return [];
+  }
 })(arguments[0]);
 `;
