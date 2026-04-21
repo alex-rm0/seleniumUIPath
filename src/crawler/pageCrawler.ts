@@ -163,7 +163,6 @@ async function crawlLocationsEditPage(driver: WebDriver): Promise<CrawledPage> {
   await driver.wait(until.elementIsVisible(editIcon), TIMEOUT);
   await editIcon.click();
 
-  await waitForSuccessAlert(driver, "Tab criado com sucesso");
   await driver.wait(until.urlContains("locationConfigCrud"), TIMEOUT);
   await driver.sleep(500);
   return snapshot(driver, "Locations - Edit (Porto de Marselha)");

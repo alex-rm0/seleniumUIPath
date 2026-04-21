@@ -1,0 +1,31 @@
+PS C:\Users\alexa\.vscode\projects\Selenium + UIPath> npm run crawl
+
+> pharmanova-qa-automation@1.0.0 crawl
+> ts-node src/crawler/crawlerMain.ts
+
+=== PharmaNova UI Element Crawler ===
+Target: https://dev.nexus.shipperform.devlop.systems/#/login
+
+[driverFactory] using chromedriver path: C:\Users\alexa\.vscode\projects\Selenium + UIPath\node_modules\chromedriver\lib\chromedriver\chromedriver.exe
+
+DevTools listening on ws://127.0.0.1:61987/devtools/browser/be2881fe-2e96-456e-987f-09187e4ac1cc
+  [crawl] extracting: Login (https://dev.nexus.shipperform.devlop.systems/#/login)
+  [crawl] found 0 element(s) on "Login"
+  [crawl] logging in...
+  [crawl] login successful
+  [crawl] extracting: Dashboard (https://dev.nexus.shipperform.devlop.systems/#/home)
+  [crawl] found 0 element(s) on "Dashboard"
+  [crawl] extracting: Markets (https://dev.nexus.shipperform.devlop.systems/#/home/markets)
+  [crawl] found 0 element(s) on "Markets"
+  [crawl] extracting: Markets - Edit (Western Europe) (https://dev.nexus.shipperform.devlop.systems/#/home/markets/marketConfigCrud)
+  [crawl] found 0 element(s) on "Markets - Edit (Western Europe)"
+  [crawl] extracting: Locations (https://dev.nexus.shipperform.devlop.systems/#/home/locations)
+  [crawl] found 0 element(s) on "Locations"
+[27532:17640:0421/173259.344:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
+[27532:17640:0421/173259.487:ERROR:google_apis\gcm\engine\mcs_client.cc:700]   Error code: 401  Error message: Authentication Failed: wrong_secret
+[27532:17640:0421/173259.487:ERROR:google_apis\gcm\engine\mcs_client.cc:702] Failed to log in to GCM, resetting connection.
+Created TensorFlow Lite XNNPACK delegate for CPU.
+Crawler failed: TimeoutError: Expected success alert: "Tab criado com sucesso"
+Wait timed out after 10015ms
+    at C:\Users\alexa\.vscode\projects\Selenium + UIPath\node_modules\selenium-webdriver\lib\webdriver.js:929:22
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)

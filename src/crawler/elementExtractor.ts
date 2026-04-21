@@ -74,20 +74,24 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
     }));
 }
 
+// NOTE: this string is executed verbatim in the browser via Selenium executeScript.
+// Avoid complex regex literals and multi-level backslash escaping inside template literals.
+// All regex here use simple patterns safe inside a JS string.
 const extractElementsScript = `
 (function(selectors) {
   try {
 
     function getXPath(el) {
       try {
-        if (el && el.id) return '//*[@id="' + el.id + '"]';
+        var id = el.getAttribute ? el.getAttribute('id') : null;
+        if (id) return '//*[@id="' + id + '"]';
         var parts = [];
         var node = el;
         while (node && node.nodeType === 1) {
           var index = 0;
           var sib = node.previousSibling;
           while (sib) {
-            if (sib.nodeType === 1 && sib.nodeName === node.nodeName) index++;
+            if (sib.nodeType === 1 && sib.nodeName === node.nodeName) { index++; }
             sib = sib.previousSibling;
           }
           var tag = node.nodeName.toLowerCase();
@@ -95,26 +99,22 @@ const extractElementsScript = `
           node = node.parentNode;
         }
         return '/' + parts.join('/');
-      } catch(e) { return ''; }
-    }
-
-    function escapeId(id) {
-      return id.replace(/([!"#$%&'()*+,./:;<=>?@[\\\\\\]^{|}~])/g, '\\\\$1');
+      } catch (e) { return ''; }
     }
 
     function getCssSelector(el) {
       try {
+        var tag = el.tagName.toLowerCase();
         var id = el.getAttribute('id');
-        if (id) return '#' + escapeId(id);
+        if (id) return '[id="' + id + '"]';
 
         var testId = el.getAttribute('data-testid');
         if (testId) return '[data-testid="' + testId + '"]';
 
         var ariaLabel = el.getAttribute('aria-label');
-        if (ariaLabel) return el.tagName.toLowerCase() + '[aria-label="' + ariaLabel.replace(/"/g, '\\\\"') + '"]';
+        if (ariaLabel) return tag + '[aria-label="' + ariaLabel + '"]';
 
         var type = el.getAttribute('type');
-        var tag = el.tagName.toLowerCase();
         if (type) return tag + '[type="' + type + '"]';
 
         var role = el.getAttribute('role');
@@ -122,21 +122,24 @@ const extractElementsScript = `
 
         var classes = [];
         if (el.classList) {
-          for (var i = 0; i < el.classList.length; i++) {
-            var c = el.classList[i];
-            if (!/^(css-|MuiBox|MuiGrid|makeStyles)/.test(c)) classes.push(c);
-            if (classes.length >= 3) break;
+          for (var ci = 0; ci < el.classList.length && classes.length < 3; ci++) {
+            var cls = el.classList[ci];
+            if (cls.indexOf('css-') !== 0 && cls.indexOf('MuiBox') !== 0 && cls.indexOf('MuiGrid') !== 0) {
+              classes.push(cls);
+            }
           }
         }
         if (classes.length > 0) return tag + '.' + classes.join('.');
 
         return tag;
-      } catch(e) { return el.tagName ? el.tagName.toLowerCase() : 'unknown'; }
+      } catch (e) {
+        return el.tagName ? el.tagName.toLowerCase() : 'unknown';
+      }
     }
 
     function truncate(str, max) {
       if (str === null || str === undefined) return null;
-      str = String(str).trim().replace(/\\s+/g, ' ');
+      str = String(str).trim();
       if (!str) return null;
       return str.length > max ? str.substring(0, max) + '...' : str;
     }
@@ -155,7 +158,7 @@ const extractElementsScript = `
 
     try {
       nodes = document.querySelectorAll(selectors);
-    } catch(e) {
+    } catch (e) {
       return [];
     }
 
@@ -164,11 +167,15 @@ const extractElementsScript = `
         var el = nodes[i];
         var rect = el.getBoundingClientRect();
         var key = el.tagName + '|' + (el.getAttribute('id') || '') + '|' + (el.getAttribute('aria-label') || '') + '|' + Math.round(rect.top) + '|' + Math.round(rect.left);
-        if (seen.has(key)) continue;
+        if (seen.has(key)) { continue; }
         seen.add(key);
 
         var elValue = null;
-        try { elValue = (el.value !== undefined && el.value !== null) ? truncate(String(el.value), 80) : null; } catch(e) {}
+        try {
+          if (typeof el.value !== 'undefined' && el.value !== null) {
+            elValue = truncate(String(el.value), 80);
+          }
+        } catch (ve) {}
 
         results.push({
           tag: el.tagName.toLowerCase(),
@@ -187,13 +194,14 @@ const extractElementsScript = `
           cssSelector: getCssSelector(el),
           xpath: getXPath(el),
           offsetWidth: el.offsetWidth || 0,
-          offsetHeight: el.offsetHeight || 0,
+          offsetHeight: el.offsetHeight || 0
         });
-      } catch(e) {}
+      } catch (e) {}
     }
 
     return results;
-  } catch(e) {
+
+  } catch (e) {
     return [];
   }
 })(arguments[0]);
