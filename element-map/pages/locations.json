@@ -1,8 +1,8 @@
 {
-  "name": "Markets",
-  "key": "markets",
-  "url": "https://dev.nexus.shipperform.devlop.systems/#/home/markets",
-  "extractedAt": "2026-04-22T14:42:15.161Z",
+  "name": "Locations",
+  "key": "locations",
+  "url": "https://dev.nexus.shipperform.devlop.systems/#/home/locations",
+  "extractedAt": "2026-04-22T14:42:18.015Z",
   "elements": [
     {
       "tag": "button",
@@ -79,11 +79,38 @@
         "MuiTab-root",
         "MuiTab-labelIcon",
         "MuiTab-textColorPrimary",
-        "Mui-selected",
         "css-1dliu7k"
       ],
       "cssSelector": "[id=\"mui-p-22639-T-1\"]",
       "xpath": "//*[@id=\"mui-p-22639-T-1\"]",
+      "interactable": true
+    },
+    {
+      "tag": "button",
+      "type": "button",
+      "role": "tab",
+      "id": "mui-p-22639-T-3",
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": "Localizações",
+      "value": null,
+      "href": null,
+      "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiTab-iconWrapper MuiTab-icon tabCloseIcon css-q7mezt",
+      "iconTestId": "CloseIcon",
+      "classes": [
+        "MuiButtonBase-root",
+        "MuiTab-root",
+        "MuiTab-labelIcon",
+        "MuiTab-textColorPrimary",
+        "Mui-selected",
+        "css-1dliu7k"
+      ],
+      "cssSelector": "[id=\"mui-p-22639-T-3\"]",
+      "xpath": "//*[@id=\"mui-p-22639-T-3\"]",
       "interactable": true
     },
     {
@@ -855,7 +882,7 @@
       "ariaLabel": null,
       "ariaDescribedBy": null,
       "testId": null,
-      "text": "NomeInativo",
+      "text": "CódigoNomeNome de ExibiçãoMoradaLatitudeLongitudePlaceTypePaísInativo",
       "value": null,
       "href": null,
       "iconClass": "pi pi-sort-alt",
@@ -923,7 +950,122 @@
       "ariaLabel": null,
       "ariaDescribedBy": null,
       "testId": null,
+      "text": "Código",
+      "value": null,
+      "href": null,
+      "iconClass": "pi pi-sort-alt",
+      "iconTestId": null,
+      "classes": [
+        "buttonClass"
+      ],
+      "cssSelector": "button i.pi-sort-alt",
+      "xpath": "//button[.//i[contains(@class,\"pi-sort-alt\")]]",
+      "interactable": true
+    },
+    {
+      "tag": "button",
+      "type": null,
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
       "text": "Nome",
+      "value": null,
+      "href": null,
+      "iconClass": "pi pi-sort-alt",
+      "iconTestId": null,
+      "classes": [
+        "buttonClass"
+      ],
+      "cssSelector": "button i.pi-sort-alt",
+      "xpath": "//button[.//i[contains(@class,\"pi-sort-alt\")]]",
+      "interactable": true
+    },
+    {
+      "tag": "button",
+      "type": null,
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": "Nome de Exibição",
+      "value": null,
+      "href": null,
+      "iconClass": "pi pi-sort-alt",
+      "iconTestId": null,
+      "classes": [
+        "buttonClass"
+      ],
+      "cssSelector": "button i.pi-sort-alt",
+      "xpath": "//button[.//i[contains(@class,\"pi-sort-alt\")]]",
+      "interactable": true
+    },
+    {
+      "tag": "button",
+      "type": null,
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": "Morada",
+      "value": null,
+      "href": null,
+      "iconClass": "pi pi-sort-alt",
+      "iconTestId": null,
+      "classes": [
+        "buttonClass"
+      ],
+      "cssSelector": "button i.pi-sort-alt",
+      "xpath": "//button[.//i[contains(@class,\"pi-sort-alt\")]]",
+      "interactable": true
+    },
+    {
+      "tag": "button",
+      "type": null,
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": "PlaceType",
+      "value": null,
+      "href": null,
+      "iconClass": "pi pi-sort-alt",
+      "iconTestId": null,
+      "classes": [
+        "buttonClass"
+      ],
+      "cssSelector": "button i.pi-sort-alt",
+      "xpath": "//button[.//i[contains(@class,\"pi-sort-alt\")]]",
+      "interactable": true
+    },
+    {
+      "tag": "button",
+      "type": null,
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": "País",
       "value": null,
       "href": null,
       "iconClass": "pi pi-sort-alt",
@@ -969,7 +1111,7 @@
       "ariaLabel": null,
       "ariaDescribedBy": null,
       "testId": null,
-      "text": "Western Europe",
+      "text": "FRAPorto de MarselhaFRA - Porto de MarselhaPont d'Arenc, 13002, 2e Arrondissement, Marseille, Bouche",
       "value": null,
       "href": null,
       "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
@@ -1049,7 +1191,7 @@
         "css-j8yymo"
       ],
       "cssSelector": "input[type=\"checkbox\"]",
-      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[2]/td[3]/div/label/span/input",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[2]/td[10]/div/label/span/input",
       "interactable": true
     },
     {
@@ -1063,7 +1205,7 @@
       "ariaLabel": null,
       "ariaDescribedBy": null,
       "testId": null,
-      "text": "TransAtlantic",
+      "text": "FRAPort de CallaisFRA - Port de Callais62100, Calais, Hauts-de-France50.9674071.850715PortFrance",
       "value": null,
       "href": null,
       "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
@@ -1144,7 +1286,7 @@
         "css-j8yymo"
       ],
       "cssSelector": "input[type=\"checkbox\"]",
-      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[3]/td[3]/div/label/span/input",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[3]/td[10]/div/label/span/input",
       "interactable": true
     },
     {
@@ -1158,16 +1300,16 @@
       "ariaLabel": null,
       "ariaDescribedBy": null,
       "testId": null,
-      "text": "INACTIVE",
+      "text": "FRAParisFRA - ParisQuai Jacques Chirac, 75007, 7e Arrondissement, Paris, Île-de-France48.8591392.293",
       "value": null,
       "href": null,
       "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
-      "iconTestId": "CheckBoxIcon",
+      "iconTestId": "CheckBoxOutlineBlankIcon",
       "classes": [
         "p-selectable-row"
       ],
-      "cssSelector": "tr [data-testid=\"CheckBoxIcon\"]",
-      "xpath": "//tr[.//*[@data-testid=\"CheckBoxIcon\"]]",
+      "cssSelector": "tr [data-testid=\"CheckBoxOutlineBlankIcon\"]",
+      "xpath": "//tr[.//*[@data-testid=\"CheckBoxOutlineBlankIcon\"]]",
       "interactable": true
     },
     {
@@ -1238,7 +1380,7 @@
         "css-j8yymo"
       ],
       "cssSelector": "input[type=\"checkbox\"]",
-      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[4]/td[3]/div/label/span/input",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[4]/td[10]/div/label/span/input",
       "interactable": true
     },
     {
@@ -1252,7 +1394,7 @@
       "ariaLabel": null,
       "ariaDescribedBy": null,
       "testId": null,
-      "text": "Agriculture Agr",
+      "text": "ESPBarcelona PortESP - Barcelona PortMuelle 18 B Barcelona, 08039, El Raval, Barcelona, Cataluña41.3",
       "value": null,
       "href": null,
       "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
@@ -1333,7 +1475,7 @@
         "css-j8yymo"
       ],
       "cssSelector": "input[type=\"checkbox\"]",
-      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[5]/td[3]/div/label/span/input",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[5]/td[10]/div/label/span/input",
       "interactable": true
     },
     {
@@ -1347,7 +1489,7 @@
       "ariaLabel": null,
       "ariaDescribedBy": null,
       "testId": null,
-      "text": "Aerospace",
+      "text": "PRTAeroporto Francisco Sá CarneiroPRT - Aeroporto Francisco Sá CarneiroAvenida Aeroporto Francisco S",
       "value": null,
       "href": null,
       "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
@@ -1427,7 +1569,7 @@
         "css-j8yymo"
       ],
       "cssSelector": "input[type=\"checkbox\"]",
-      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[6]/td[3]/div/label/span/input",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[6]/td[10]/div/label/span/input",
       "interactable": true
     },
     {
@@ -1441,7 +1583,7 @@
       "ariaLabel": null,
       "ariaDescribedBy": null,
       "testId": null,
-      "text": "Automotive",
+      "text": "PRTGuimarãesPRT - GuimarãesRua Dona Teresa, 4800-004, Guimarães, Braga41.448381-8.290858LocationPort",
       "value": null,
       "href": null,
       "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
@@ -1522,7 +1664,7 @@
         "css-j8yymo"
       ],
       "cssSelector": "input[type=\"checkbox\"]",
-      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[7]/td[3]/div/label/span/input",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[7]/td[10]/div/label/span/input",
       "interactable": true
     },
     {
@@ -1536,7 +1678,7 @@
       "ariaLabel": null,
       "ariaDescribedBy": null,
       "testId": null,
-      "text": "Pharmaceutical",
+      "text": "PRTPorto de SinesPRT - Porto de SinesAvenida Vasco da Gama, 7520-101, Sines, Setúbal37.952758-8.8734",
       "value": null,
       "href": null,
       "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
@@ -1616,7 +1758,7 @@
         "css-j8yymo"
       ],
       "cssSelector": "input[type=\"checkbox\"]",
-      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[8]/td[3]/div/label/span/input",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[8]/td[10]/div/label/span/input",
       "interactable": true
     },
     {
@@ -1630,7 +1772,7 @@
       "ariaLabel": null,
       "ariaDescribedBy": null,
       "testId": null,
-      "text": "Retail & E-Commerce",
+      "text": "DEUBerlinDEU - Berlin52.51727813.419729LocationGermany",
       "value": null,
       "href": null,
       "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
@@ -1711,7 +1853,7 @@
         "css-j8yymo"
       ],
       "cssSelector": "input[type=\"checkbox\"]",
-      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[9]/td[3]/div/label/span/input",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[9]/td[10]/div/label/span/input",
       "interactable": true
     },
     {
@@ -1725,7 +1867,7 @@
       "ariaLabel": null,
       "ariaDescribedBy": null,
       "testId": null,
-      "text": "Middle East",
+      "text": "JPNTokyoJPN - Tokyo35.689503139.691759LocationJapan",
       "value": null,
       "href": null,
       "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
@@ -1805,7 +1947,7 @@
         "css-j8yymo"
       ],
       "cssSelector": "input[type=\"checkbox\"]",
-      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[10]/td[3]/div/label/span/input",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[10]/td[10]/div/label/span/input",
       "interactable": true
     },
     {
@@ -1819,7 +1961,7 @@
       "ariaLabel": null,
       "ariaDescribedBy": null,
       "testId": null,
-      "text": "Asia-Pacific",
+      "text": "BRABahiaBRA - Bahia-12.476393-41.739746LocationBrazil",
       "value": null,
       "href": null,
       "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
@@ -1900,7 +2042,7 @@
         "css-j8yymo"
       ],
       "cssSelector": "input[type=\"checkbox\"]",
-      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[11]/td[3]/div/label/span/input",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[11]/td[10]/div/label/span/input",
       "interactable": true
     },
     {
@@ -1914,7 +2056,7 @@
       "ariaLabel": null,
       "ariaDescribedBy": null,
       "testId": null,
-      "text": "South America",
+      "text": "BRASão PauloBRA - São Paulo-23.553156-46.642143LocationBrazil",
       "value": null,
       "href": null,
       "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
@@ -1994,7 +2136,7 @@
         "css-j8yymo"
       ],
       "cssSelector": "input[type=\"checkbox\"]",
-      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[12]/td[3]/div/label/span/input",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[12]/td[10]/div/label/span/input",
       "interactable": true
     },
     {
@@ -2008,7 +2150,7 @@
       "ariaLabel": null,
       "ariaDescribedBy": null,
       "testId": null,
-      "text": "North America",
+      "text": "BRARio de JaneiroBRA - Rio de Janeiro-22.901808-43.179946LocationBrazil",
       "value": null,
       "href": null,
       "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
@@ -2089,7 +2231,7 @@
         "css-j8yymo"
       ],
       "cssSelector": "input[type=\"checkbox\"]",
-      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[13]/td[3]/div/label/span/input",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[13]/td[10]/div/label/span/input",
       "interactable": true
     },
     {
@@ -2103,7 +2245,7 @@
       "ariaLabel": null,
       "ariaDescribedBy": null,
       "testId": null,
-      "text": "Europe",
+      "text": "AUSSydneyAUS - Sydney-33.870763151.207434LocationAustralia",
       "value": null,
       "href": null,
       "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
@@ -2183,7 +2325,669 @@
         "css-j8yymo"
       ],
       "cssSelector": "input[type=\"checkbox\"]",
-      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[14]/td[3]/div/label/span/input",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[14]/td[10]/div/label/span/input",
+      "interactable": true
+    },
+    {
+      "tag": "tr",
+      "type": null,
+      "role": "row",
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": "USALos AngelesUSA - Los Angeles34.050448-118.232586LocationUnited States",
+      "value": null,
+      "href": null,
+      "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
+      "iconTestId": "CheckBoxOutlineBlankIcon",
+      "classes": [
+        "p-selectable-row",
+        "p-row-odd"
+      ],
+      "cssSelector": "tr [data-testid=\"CheckBoxOutlineBlankIcon\"]",
+      "xpath": "//tr[.//*[@data-testid=\"CheckBoxOutlineBlankIcon\"]]",
+      "interactable": true
+    },
+    {
+      "tag": "div",
+      "type": null,
+      "role": "checkbox",
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": "Row Selected null",
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": null,
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "p-checkbox",
+        "p-component"
+      ],
+      "cssSelector": "div[aria-label=\"Row Selected null\"]",
+      "xpath": "//div[@aria-label=\"Row Selected null\"]",
+      "interactable": true
+    },
+    {
+      "tag": "input",
+      "type": "checkbox",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": "Row Selected null",
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": "on",
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "p-checkbox-input"
+      ],
+      "cssSelector": "input[aria-label=\"Row Selected null\"]",
+      "xpath": "//input[@aria-label=\"Row Selected null\"]",
+      "interactable": true
+    },
+    {
+      "tag": "input",
+      "type": "checkbox",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": "on",
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "PrivateSwitchBase-input",
+        "css-j8yymo"
+      ],
+      "cssSelector": "input[type=\"checkbox\"]",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[15]/td[10]/div/label/span/input",
+      "interactable": true
+    },
+    {
+      "tag": "tr",
+      "type": null,
+      "role": "row",
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": "USANew JerseyUSA - New Jersey39.610212-74.722156LocationUnited States",
+      "value": null,
+      "href": null,
+      "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
+      "iconTestId": "CheckBoxOutlineBlankIcon",
+      "classes": [
+        "p-selectable-row"
+      ],
+      "cssSelector": "tr [data-testid=\"CheckBoxOutlineBlankIcon\"]",
+      "xpath": "//tr[.//*[@data-testid=\"CheckBoxOutlineBlankIcon\"]]",
+      "interactable": true
+    },
+    {
+      "tag": "div",
+      "type": null,
+      "role": "checkbox",
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": "Row Selected null",
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": null,
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "p-checkbox",
+        "p-component"
+      ],
+      "cssSelector": "div[aria-label=\"Row Selected null\"]",
+      "xpath": "//div[@aria-label=\"Row Selected null\"]",
+      "interactable": true
+    },
+    {
+      "tag": "input",
+      "type": "checkbox",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": "Row Selected null",
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": "on",
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "p-checkbox-input"
+      ],
+      "cssSelector": "input[aria-label=\"Row Selected null\"]",
+      "xpath": "//input[@aria-label=\"Row Selected null\"]",
+      "interactable": true
+    },
+    {
+      "tag": "input",
+      "type": "checkbox",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": "on",
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "PrivateSwitchBase-input",
+        "css-j8yymo"
+      ],
+      "cssSelector": "input[type=\"checkbox\"]",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[16]/td[10]/div/label/span/input",
+      "interactable": true
+    },
+    {
+      "tag": "tr",
+      "type": null,
+      "role": "row",
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": "USANew YorkUSA - New York40.71074-74.00105LocationUnited States",
+      "value": null,
+      "href": null,
+      "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
+      "iconTestId": "CheckBoxOutlineBlankIcon",
+      "classes": [
+        "p-selectable-row",
+        "p-row-odd"
+      ],
+      "cssSelector": "tr [data-testid=\"CheckBoxOutlineBlankIcon\"]",
+      "xpath": "//tr[.//*[@data-testid=\"CheckBoxOutlineBlankIcon\"]]",
+      "interactable": true
+    },
+    {
+      "tag": "div",
+      "type": null,
+      "role": "checkbox",
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": "Row Selected null",
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": null,
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "p-checkbox",
+        "p-component"
+      ],
+      "cssSelector": "div[aria-label=\"Row Selected null\"]",
+      "xpath": "//div[@aria-label=\"Row Selected null\"]",
+      "interactable": true
+    },
+    {
+      "tag": "input",
+      "type": "checkbox",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": "Row Selected null",
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": "on",
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "p-checkbox-input"
+      ],
+      "cssSelector": "input[aria-label=\"Row Selected null\"]",
+      "xpath": "//input[@aria-label=\"Row Selected null\"]",
+      "interactable": true
+    },
+    {
+      "tag": "input",
+      "type": "checkbox",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": "on",
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "PrivateSwitchBase-input",
+        "css-j8yymo"
+      ],
+      "cssSelector": "input[type=\"checkbox\"]",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[17]/td[10]/div/label/span/input",
+      "interactable": true
+    },
+    {
+      "tag": "tr",
+      "type": null,
+      "role": "row",
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": "USAMiamiUSA - Miami25.773061-80.195732LocationUnited States",
+      "value": null,
+      "href": null,
+      "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
+      "iconTestId": "CheckBoxOutlineBlankIcon",
+      "classes": [
+        "p-selectable-row"
+      ],
+      "cssSelector": "tr [data-testid=\"CheckBoxOutlineBlankIcon\"]",
+      "xpath": "//tr[.//*[@data-testid=\"CheckBoxOutlineBlankIcon\"]]",
+      "interactable": true
+    },
+    {
+      "tag": "div",
+      "type": null,
+      "role": "checkbox",
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": "Row Selected null",
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": null,
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "p-checkbox",
+        "p-component"
+      ],
+      "cssSelector": "div[aria-label=\"Row Selected null\"]",
+      "xpath": "//div[@aria-label=\"Row Selected null\"]",
+      "interactable": true
+    },
+    {
+      "tag": "input",
+      "type": "checkbox",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": "Row Selected null",
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": "on",
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "p-checkbox-input"
+      ],
+      "cssSelector": "input[aria-label=\"Row Selected null\"]",
+      "xpath": "//input[@aria-label=\"Row Selected null\"]",
+      "interactable": true
+    },
+    {
+      "tag": "input",
+      "type": "checkbox",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": "on",
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "PrivateSwitchBase-input",
+        "css-j8yymo"
+      ],
+      "cssSelector": "input[type=\"checkbox\"]",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[18]/td[10]/div/label/span/input",
+      "interactable": true
+    },
+    {
+      "tag": "tr",
+      "type": null,
+      "role": "row",
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": "PRTFaroPRT - Faro37.015178-7.934956LocationPortugal",
+      "value": null,
+      "href": null,
+      "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
+      "iconTestId": "CheckBoxOutlineBlankIcon",
+      "classes": [
+        "p-selectable-row",
+        "p-row-odd"
+      ],
+      "cssSelector": "tr [data-testid=\"CheckBoxOutlineBlankIcon\"]",
+      "xpath": "//tr[.//*[@data-testid=\"CheckBoxOutlineBlankIcon\"]]",
+      "interactable": true
+    },
+    {
+      "tag": "div",
+      "type": null,
+      "role": "checkbox",
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": "Row Selected null",
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": null,
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "p-checkbox",
+        "p-component"
+      ],
+      "cssSelector": "div[aria-label=\"Row Selected null\"]",
+      "xpath": "//div[@aria-label=\"Row Selected null\"]",
+      "interactable": true
+    },
+    {
+      "tag": "input",
+      "type": "checkbox",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": "Row Selected null",
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": "on",
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "p-checkbox-input"
+      ],
+      "cssSelector": "input[aria-label=\"Row Selected null\"]",
+      "xpath": "//input[@aria-label=\"Row Selected null\"]",
+      "interactable": true
+    },
+    {
+      "tag": "input",
+      "type": "checkbox",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": "on",
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "PrivateSwitchBase-input",
+        "css-j8yymo"
+      ],
+      "cssSelector": "input[type=\"checkbox\"]",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[19]/td[10]/div/label/span/input",
+      "interactable": true
+    },
+    {
+      "tag": "tr",
+      "type": null,
+      "role": "row",
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": "PRTLisboa CentroPRT - Lisboa CentroPraça Dom Pedro IV, 1100, Lisboa38.713158-9.139148LocationPortuga",
+      "value": null,
+      "href": null,
+      "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
+      "iconTestId": "CheckBoxOutlineBlankIcon",
+      "classes": [
+        "p-selectable-row"
+      ],
+      "cssSelector": "tr [data-testid=\"CheckBoxOutlineBlankIcon\"]",
+      "xpath": "//tr[.//*[@data-testid=\"CheckBoxOutlineBlankIcon\"]]",
+      "interactable": true
+    },
+    {
+      "tag": "div",
+      "type": null,
+      "role": "checkbox",
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": "Row Selected null",
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": null,
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "p-checkbox",
+        "p-component"
+      ],
+      "cssSelector": "div[aria-label=\"Row Selected null\"]",
+      "xpath": "//div[@aria-label=\"Row Selected null\"]",
+      "interactable": true
+    },
+    {
+      "tag": "input",
+      "type": "checkbox",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": "Row Selected null",
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": "on",
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "p-checkbox-input"
+      ],
+      "cssSelector": "input[aria-label=\"Row Selected null\"]",
+      "xpath": "//input[@aria-label=\"Row Selected null\"]",
+      "interactable": true
+    },
+    {
+      "tag": "input",
+      "type": "checkbox",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": "on",
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "PrivateSwitchBase-input",
+        "css-j8yymo"
+      ],
+      "cssSelector": "input[type=\"checkbox\"]",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[20]/td[10]/div/label/span/input",
+      "interactable": true
+    },
+    {
+      "tag": "tr",
+      "type": null,
+      "role": "row",
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": "PRTPorto CentroPRT - Porto CentroAvenida dos Aliados 179-215, 4000-067, Porto41.148705-8.611225Locat",
+      "value": null,
+      "href": null,
+      "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
+      "iconTestId": "CheckBoxOutlineBlankIcon",
+      "classes": [
+        "p-selectable-row",
+        "p-row-odd"
+      ],
+      "cssSelector": "tr [data-testid=\"CheckBoxOutlineBlankIcon\"]",
+      "xpath": "//tr[.//*[@data-testid=\"CheckBoxOutlineBlankIcon\"]]",
+      "interactable": true
+    },
+    {
+      "tag": "div",
+      "type": null,
+      "role": "checkbox",
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": "Row Selected null",
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": null,
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "p-checkbox",
+        "p-component"
+      ],
+      "cssSelector": "div[aria-label=\"Row Selected null\"]",
+      "xpath": "//div[@aria-label=\"Row Selected null\"]",
+      "interactable": true
+    },
+    {
+      "tag": "input",
+      "type": "checkbox",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": "Row Selected null",
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": "on",
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "p-checkbox-input"
+      ],
+      "cssSelector": "input[aria-label=\"Row Selected null\"]",
+      "xpath": "//input[@aria-label=\"Row Selected null\"]",
+      "interactable": true
+    },
+    {
+      "tag": "input",
+      "type": "checkbox",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": "on",
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "PrivateSwitchBase-input",
+        "css-j8yymo"
+      ],
+      "cssSelector": "input[type=\"checkbox\"]",
+      "xpath": "/html/body/div/div[3]/div[2]/div/div/div/div/div/div[2]/div/div/div[2]/table/tbody/tr[21]/td[10]/div/label/span/input",
       "interactable": true
     },
     {
@@ -2259,11 +3063,36 @@
         "p-paginator-element",
         "p-link",
         "p-paginator-page-start",
-        "p-paginator-page-end",
         "p-highlight"
       ],
       "cssSelector": "button[aria-label=\"Page 1\"]",
       "xpath": "//button[@aria-label=\"Page 1\"]",
+      "interactable": true
+    },
+    {
+      "tag": "button",
+      "type": "button",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": "Page 2",
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": "2",
+      "value": null,
+      "href": null,
+      "iconClass": null,
+      "iconTestId": null,
+      "classes": [
+        "p-paginator-page",
+        "p-paginator-element",
+        "p-link",
+        "p-paginator-page-end"
+      ],
+      "cssSelector": "button[aria-label=\"Page 2\"]",
+      "xpath": "//button[@aria-label=\"Page 2\"]",
       "interactable": true
     },
     {
@@ -2285,8 +3114,7 @@
       "classes": [
         "p-paginator-next",
         "p-paginator-element",
-        "p-link",
-        "p-disabled"
+        "p-link"
       ],
       "cssSelector": "button[aria-label=\"Next Page\"]",
       "xpath": "//button[@aria-label=\"Next Page\"]",
@@ -2311,8 +3139,7 @@
       "classes": [
         "p-paginator-last",
         "p-paginator-element",
-        "p-link",
-        "p-disabled"
+        "p-link"
       ],
       "cssSelector": "button[aria-label=\"Last Page\"]",
       "xpath": "//button[@aria-label=\"Last Page\"]",

@@ -2,7 +2,7 @@
   "name": "Login",
   "key": "login",
   "url": "https://dev.nexus.shipperform.devlop.systems/#/login",
-  "extractedAt": "2026-04-22T13:45:29.425Z",
+  "extractedAt": "2026-04-22T14:42:12.084Z",
   "elements": [
     {
       "tag": "input",
@@ -18,6 +18,8 @@
       "text": null,
       "value": null,
       "href": null,
+      "iconClass": null,
+      "iconTestId": null,
       "classes": [
         "MuiInputBase-input",
         "MuiOutlinedInput-input",
@@ -43,6 +45,8 @@
       "text": null,
       "value": null,
       "href": null,
+      "iconClass": null,
+      "iconTestId": null,
       "classes": [
         "MuiInputBase-input",
         "MuiOutlinedInput-input",
@@ -69,6 +73,8 @@
       "text": null,
       "value": null,
       "href": null,
+      "iconClass": "MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-q7mezt",
+      "iconTestId": "VisibilityIcon",
       "classes": [
         "MuiButtonBase-root",
         "MuiIconButton-root",
@@ -94,6 +100,8 @@
       "text": "Iniciar Sessão",
       "value": null,
       "href": null,
+      "iconClass": null,
+      "iconTestId": null,
       "classes": [
         "buttonClass",
         "buttonClassHover"
