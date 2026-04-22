@@ -1,0 +1,106 @@
+{
+  "name": "Login",
+  "key": "login",
+  "url": "https://dev.nexus.shipperform.devlop.systems/#/login",
+  "extractedAt": "2026-04-22T13:45:29.425Z",
+  "elements": [
+    {
+      "tag": "input",
+      "type": "text",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": "Endereço de email",
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": null,
+      "href": null,
+      "classes": [
+        "MuiInputBase-input",
+        "MuiOutlinedInput-input",
+        "MuiInputBase-inputSizeSmall",
+        "MuiInputBase-inputAdornedStart",
+        "css-1m7embp"
+      ],
+      "cssSelector": "input[type=\"text\"]",
+      "xpath": "/html/body/div/div[2]/div[2]/div/div[2]/div/div/div/div/input",
+      "interactable": true
+    },
+    {
+      "tag": "input",
+      "type": "password",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": "Palavra-passe",
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": null,
+      "href": null,
+      "classes": [
+        "MuiInputBase-input",
+        "MuiOutlinedInput-input",
+        "MuiInputBase-inputSizeSmall",
+        "MuiInputBase-inputAdornedStart",
+        "MuiInputBase-inputAdornedEnd",
+        "css-1xqp9nb"
+      ],
+      "cssSelector": "input[type=\"password\"]",
+      "xpath": "/html/body/div/div[2]/div[2]/div/div[2]/div/div[2]/div/div/input",
+      "interactable": true
+    },
+    {
+      "tag": "button",
+      "type": "button",
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": "toggle password visibility",
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": null,
+      "value": null,
+      "href": null,
+      "classes": [
+        "MuiButtonBase-root",
+        "MuiIconButton-root",
+        "MuiIconButton-edgeEnd",
+        "MuiIconButton-sizeMedium",
+        "css-1udrn7b"
+      ],
+      "cssSelector": "button[aria-label=\"toggle password visibility\"]",
+      "xpath": "//button[@aria-label=\"toggle password visibility\"]",
+      "interactable": true
+    },
+    {
+      "tag": "button",
+      "type": null,
+      "role": null,
+      "id": null,
+      "name": null,
+      "label": null,
+      "placeholder": null,
+      "ariaLabel": null,
+      "ariaDescribedBy": null,
+      "testId": null,
+      "text": "Iniciar Sessão",
+      "value": null,
+      "href": null,
+      "classes": [
+        "buttonClass",
+        "buttonClassHover"
+      ],
+      "cssSelector": "button.buttonClass.buttonClassHover",
+      "xpath": "//button[normalize-space()=\"Iniciar Sessão\"]",
+      "interactable": true
+    }
+  ]
+}
