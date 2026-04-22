@@ -61,21 +61,21 @@ async function run(): Promise<void> {
       return;
     }
 
-    // Per-page files in reports/pages/<key>.json
-    const pagesFolder = ensureDirectoryExists("reports/pages");
+    // Per-page files in element-map/pages/<key>.json
+    const pagesFolder = ensureDirectoryExists("element-map/pages");
     for (const page of pages) {
       const filePath = path.join(pagesFolder, `${page.key}.json`);
       fs.writeFileSync(filePath, JSON.stringify(page, null, 2), "utf8");
     }
 
     // Combined latest report
-    const reportsFolder = ensureDirectoryExists("reports");
+    const elementMapFolder = ensureDirectoryExists("element-map");
     const elementMap: ElementMap = {
       generatedAt: new Date().toISOString(),
       baseUrl: appConfig.baseUrl,
       pages,
     };
-    const latestPath = path.join(reportsFolder, "element-map-latest.json");
+    const latestPath = path.join(elementMapFolder, "latest.json");
     fs.writeFileSync(latestPath, JSON.stringify(elementMap, null, 2), "utf8");
 
     const totalElements = pages.reduce((sum, p) => sum + p.elements.length, 0);
@@ -84,8 +84,8 @@ async function run(): Promise<void> {
     console.log("=== Crawl complete ===");
     console.log(`Pages crawled  : ${pages.length}`);
     console.log(`Total elements : ${totalElements}`);
-    console.log(`Per-page files : reports/pages/`);
-    console.log(`Combined       : reports/element-map-latest.json`);
+    console.log(`Per-page files : element-map/pages/`);
+    console.log(`Combined       : element-map/latest.json`);
     console.log("");
 
     for (const page of pages) {
