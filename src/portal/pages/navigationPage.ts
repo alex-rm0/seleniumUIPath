@@ -1,5 +1,5 @@
 import { By, Key, until, WebDriver, WebElement } from "selenium-webdriver";
-import { appConfig } from "../config/appConfig";
+import { portalConfig } from "../config/portalConfig";
 
 export class NavigationPage {
   private readonly menuButton = By.css('button[aria-label="Menu"][aria-haspopup="true"]');
@@ -31,25 +31,18 @@ export class NavigationPage {
   constructor(private readonly driver: WebDriver) {}
 
   public async openSideMenu(): Promise<void> {
-    if (await this.hasVisibleElement(this.visibleMenuItem)) {
-      return;
-    }
+    if (await this.hasVisibleElement(this.visibleMenuItem)) return;
 
-    const menu = await this.driver.wait(until.elementLocated(this.menuButton), appConfig.timeoutMs);
-    await this.driver.wait(until.elementIsVisible(menu), appConfig.timeoutMs);
-    await this.driver.wait(until.elementIsEnabled(menu), appConfig.timeoutMs);
-
+    const menu = await this.driver.wait(until.elementLocated(this.menuButton), portalConfig.timeoutMs);
+    await this.driver.wait(until.elementIsVisible(menu), portalConfig.timeoutMs);
+    await this.driver.wait(until.elementIsEnabled(menu), portalConfig.timeoutMs);
     await menu.click();
 
-    if (await this.waitForMenuToOpen()) {
-      return;
-    }
+    if (await this.waitForMenuToOpen()) return;
 
     await this.driver.executeScript("arguments[0].click();", menu);
 
-    if (await this.waitForMenuToOpen()) {
-      return;
-    }
+    if (await this.waitForMenuToOpen()) return;
 
     throw new Error("Expected side menu to open");
   }
@@ -57,14 +50,14 @@ export class NavigationPage {
   public async openMarkets(): Promise<void> {
     await this.ensureMenuItemInteractable(this.marketsButton);
     await this.clickMenuItem(this.marketsButton);
-    await this.driver.wait(until.urlContains("markets"), appConfig.timeoutMs);
+    await this.driver.wait(until.urlContains("markets"), portalConfig.timeoutMs);
     await this.expectWesternEuropeVisible();
   }
 
   public async openLocations(): Promise<void> {
     await this.ensureMenuItemInteractable(this.locationsButton);
     await this.clickMenuItem(this.locationsButton);
-    await this.driver.wait(until.urlContains("locations"), appConfig.timeoutMs);
+    await this.driver.wait(until.urlContains("locations"), portalConfig.timeoutMs);
     await this.expectPortoMarselhaVisible();
   }
 
@@ -106,7 +99,7 @@ export class NavigationPage {
     const editIcon = await this.findInteractableElement(this.editButton);
     await this.clickElement(editIcon);
 
-    await this.driver.wait(until.urlContains("marketConfigCrud"), appConfig.timeoutMs);
+    await this.driver.wait(until.urlContains("marketConfigCrud"), portalConfig.timeoutMs);
     await this.findInteractableElement(this.marketInfoTitle);
     await this.findInteractableElement(this.westernEuropeInput);
   }
@@ -128,7 +121,7 @@ export class NavigationPage {
     const editIcon = await this.findInteractableElement(this.editButton);
     await this.clickElement(editIcon);
 
-    await this.driver.wait(until.urlContains("locationConfigCrud"), appConfig.timeoutMs);
+    await this.driver.wait(until.urlContains("locationConfigCrud"), portalConfig.timeoutMs);
     await this.findInteractableElement(this.locationInfoTitle);
     await this.findInteractableElement(this.portoMarselhaInput);
   }
@@ -137,7 +130,7 @@ export class NavigationPage {
     const newBtn = await this.findInteractableElement(this.newMarketButton);
     await this.clickElement(newBtn);
 
-    await this.driver.wait(until.urlContains("marketConfigCrud"), appConfig.timeoutMs);
+    await this.driver.wait(until.urlContains("marketConfigCrud"), portalConfig.timeoutMs);
     await this.findInteractableElement(this.marketInfoTitle);
 
     const nameInput = await this.findInteractableElement(this.marketNameInput);
@@ -159,7 +152,7 @@ export class NavigationPage {
     const editIcon = await this.findInteractableElement(this.editButton);
     await this.clickElement(editIcon);
 
-    await this.driver.wait(until.urlContains("marketConfigCrud"), appConfig.timeoutMs);
+    await this.driver.wait(until.urlContains("marketConfigCrud"), portalConfig.timeoutMs);
     await this.findInteractableElement(this.marketInfoTitle);
 
     const nameInput = await this.findInteractableElement(this.marketNameInput);
@@ -182,14 +175,11 @@ export class NavigationPage {
     await this.clickElement(deleteBtn);
 
     try {
-      const confirmBtn = await this.driver.wait(
-        until.elementLocated(this.confirmDeleteButton),
-        3000
-      );
+      const confirmBtn = await this.driver.wait(until.elementLocated(this.confirmDeleteButton), 3000);
       await this.driver.wait(until.elementIsVisible(confirmBtn), 3000);
       await this.clickElement(confirmBtn);
     } catch {
-      // sem diálogo de confirmação — o delete foi imediato
+      // sem diálogo de confirmação — delete imediato
     }
 
     await this.waitAfterSave();
@@ -197,14 +187,12 @@ export class NavigationPage {
   }
 
   public async expectMarketVisible(name: string): Promise<void> {
-    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
-    await this.findInteractableElement(rowLocator);
+    await this.findInteractableElement(By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`));
   }
 
   public async expectMarketNotVisible(name: string): Promise<void> {
     await this.driver.sleep(1000);
-    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
-    const rows = await this.driver.findElements(rowLocator);
+    const rows = await this.driver.findElements(By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`));
     for (const row of rows) {
       if (await row.isDisplayed()) {
         throw new Error(`Mercado "${name}" devia ter sido eliminado mas ainda está visível`);
@@ -215,7 +203,7 @@ export class NavigationPage {
   public async openTransportTypes(): Promise<void> {
     await this.ensureMenuItemInteractable(this.transportTypesButton);
     await this.clickMenuItem(this.transportTypesButton);
-    await this.driver.wait(until.urlContains("transport-types"), appConfig.timeoutMs);
+    await this.driver.wait(until.urlContains("transport-types"), portalConfig.timeoutMs);
     await this.findInteractableElement(this.anyTableRow);
   }
 
@@ -223,7 +211,7 @@ export class NavigationPage {
     const newBtn = await this.findInteractableElement(this.newTransportTypeButton);
     await this.clickElement(newBtn);
 
-    await this.driver.wait(until.urlContains("transportTypeConfigCrud"), appConfig.timeoutMs);
+    await this.driver.wait(until.urlContains("transportTypeConfigCrud"), portalConfig.timeoutMs);
     const nameInput = await this.findInteractableElement(this.transportTypeNameInput);
     await this.replaceInputValue(nameInput, name);
 
@@ -236,14 +224,13 @@ export class NavigationPage {
   }
 
   public async editTransportTypeName(name: string, newName: string): Promise<void> {
-    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
-    const row = await this.findInteractableElement(rowLocator);
+    const row = await this.findInteractableElement(By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`));
     await this.clickElement(row);
 
     const editIcon = await this.findInteractableElement(this.editButton);
     await this.clickElement(editIcon);
 
-    await this.driver.wait(until.urlContains("transportTypeConfigCrud"), appConfig.timeoutMs);
+    await this.driver.wait(until.urlContains("transportTypeConfigCrud"), portalConfig.timeoutMs);
     const nameInput = await this.findInteractableElement(this.transportTypeNameInput);
     await this.replaceInputValue(nameInput, newName);
 
@@ -256,22 +243,18 @@ export class NavigationPage {
   }
 
   public async deleteTransportType(name: string): Promise<void> {
-    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
-    const row = await this.findInteractableElement(rowLocator);
+    const row = await this.findInteractableElement(By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`));
     await this.clickElement(row);
 
     const deleteBtn = await this.findInteractableElement(this.deleteMarketButton);
     await this.clickElement(deleteBtn);
 
     try {
-      const confirmBtn = await this.driver.wait(
-        until.elementLocated(this.confirmDeleteButton),
-        3000
-      );
+      const confirmBtn = await this.driver.wait(until.elementLocated(this.confirmDeleteButton), 3000);
       await this.driver.wait(until.elementIsVisible(confirmBtn), 3000);
       await this.clickElement(confirmBtn);
     } catch {
-      // sem diálogo de confirmação — o delete foi imediato
+      // delete imediato
     }
 
     await this.waitAfterSave();
@@ -279,14 +262,12 @@ export class NavigationPage {
   }
 
   public async expectTransportTypeVisible(name: string): Promise<void> {
-    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
-    await this.findInteractableElement(rowLocator);
+    await this.findInteractableElement(By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`));
   }
 
   public async expectTransportTypeNotVisible(name: string): Promise<void> {
     await this.driver.sleep(1000);
-    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
-    const rows = await this.driver.findElements(rowLocator);
+    const rows = await this.driver.findElements(By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`));
     for (const row of rows) {
       if (await row.isDisplayed()) {
         throw new Error(`Tipo de Transporte "${name}" devia ter sido eliminado mas ainda está visível`);
@@ -306,20 +287,16 @@ export class NavigationPage {
   }
 
   private async openMarketsPageDirectly(): Promise<void> {
-    const currentUrl = await this.driver.getCurrentUrl();
-    const baseUrl = currentUrl.split("#")[0];
-
+    const baseUrl = (await this.driver.getCurrentUrl()).split("#")[0];
     await this.driver.get(`${baseUrl}#/home/markets`);
-    await this.driver.wait(until.urlContains("markets"), appConfig.timeoutMs);
+    await this.driver.wait(until.urlContains("markets"), portalConfig.timeoutMs);
     await this.expectWesternEuropeVisible();
   }
 
   private async openTransportTypesPageDirectly(): Promise<void> {
-    const currentUrl = await this.driver.getCurrentUrl();
-    const baseUrl = currentUrl.split("#")[0];
-
+    const baseUrl = (await this.driver.getCurrentUrl()).split("#")[0];
     await this.driver.get(`${baseUrl}#/home/transport-types`);
-    await this.driver.wait(until.urlContains("transport-types"), appConfig.timeoutMs);
+    await this.driver.wait(until.urlContains("transport-types"), portalConfig.timeoutMs);
     await this.findInteractableElement(this.anyTableRow);
   }
 
@@ -330,10 +307,7 @@ export class NavigationPage {
   }
 
   private async ensureMenuItemInteractable(locator: By): Promise<void> {
-    if (await this.hasInteractableElement(locator)) {
-      return;
-    }
-
+    if (await this.hasInteractableElement(locator)) return;
     await this.openSideMenu();
     await this.findInteractableElement(locator);
   }
@@ -341,34 +315,22 @@ export class NavigationPage {
   private async selectTab(locator: By, tabName: string): Promise<void> {
     const tab = await this.findInteractableElement(locator);
     await this.clickElement(tab);
-
     await this.driver.wait(async () => {
       const selected = await tab.getAttribute("aria-selected");
       return selected === "true";
-    }, appConfig.timeoutMs, `Expected ${tabName} tab to be selected`);
+    }, portalConfig.timeoutMs, `Expected ${tabName} tab to be selected`);
   }
 
-  private async waitForSuccessAlert(message: string): Promise<string> {
-    const normalizedMessage = message.toLowerCase();
-    const locator = By.xpath(`//div[contains(@class, 'MuiAlert-colorSuccess') and contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '${normalizedMessage}')]`);
-
+  private async waitForSuccessAlert(message: string): Promise<void> {
+    const normalized = message.toLowerCase();
+    const locator = By.xpath(`//div[contains(@class,'MuiAlert-colorSuccess') and contains(translate(.,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'${normalized}')]`);
     await this.driver.wait(async () => {
       const alerts = await this.driver.findElements(locator);
-
       for (const alert of alerts) {
-        try {
-          if (await alert.isDisplayed()) {
-            return true;
-          }
-        } catch {
-          return false;
-        }
+        try { if (await alert.isDisplayed()) return true; } catch { /* stale */ }
       }
-
       return false;
-    }, appConfig.timeoutMs, `Expected success alert: ${message}`);
-
-    return message;
+    }, portalConfig.timeoutMs, `Expected success alert: ${message}`);
   }
 
   private async waitAfterSave(): Promise<void> {
@@ -380,70 +342,44 @@ export class NavigationPage {
   }
 
   private async findInteractableElement(locator: By): Promise<WebElement> {
-    await this.driver.wait(until.elementLocated(locator), appConfig.timeoutMs);
-
+    await this.driver.wait(until.elementLocated(locator), portalConfig.timeoutMs);
     const element = await this.driver.wait(async () => {
       const elements = await this.driver.findElements(locator);
-
-      for (const element of elements) {
-        if (await this.isInteractable(element)) {
-          return element;
-        }
+      for (const el of elements) {
+        if (await this.isInteractable(el)) return el;
       }
-
       return false;
-    }, appConfig.timeoutMs);
-
-    if (!element) {
-      throw new Error(`Expected to find an interactable element for ${locator}`);
-    }
-
+    }, portalConfig.timeoutMs);
+    if (!element) throw new Error(`Expected to find an interactable element for ${locator}`);
     return element;
   }
 
   private async findLastInteractableElement(locator: By): Promise<WebElement> {
-    await this.driver.wait(until.elementLocated(locator), appConfig.timeoutMs);
-
+    await this.driver.wait(until.elementLocated(locator), portalConfig.timeoutMs);
     const element = await this.driver.wait(async () => {
       const elements = await this.driver.findElements(locator);
-
-      for (const element of elements.reverse()) {
-        if (await this.isInteractable(element)) {
-          return element;
-        }
+      for (const el of elements.reverse()) {
+        if (await this.isInteractable(el)) return el;
       }
-
       return false;
-    }, appConfig.timeoutMs);
-
-    if (!element) {
-      throw new Error(`Expected to find an interactable element for ${locator}`);
-    }
-
+    }, portalConfig.timeoutMs);
+    if (!element) throw new Error(`Expected to find an interactable element for ${locator}`);
     return element;
   }
 
   private async hasInteractableElement(locator: By): Promise<boolean> {
     const elements = await this.driver.findElements(locator);
-
-    for (const element of elements) {
-      if (await this.isInteractable(element)) {
-        return true;
-      }
+    for (const el of elements) {
+      if (await this.isInteractable(el)) return true;
     }
-
     return false;
   }
 
   private async hasVisibleElement(locator: By): Promise<boolean> {
     const elements = await this.driver.findElements(locator);
-
-    for (const element of elements) {
-      if (await element.isDisplayed()) {
-        return true;
-      }
+    for (const el of elements) {
+      if (await el.isDisplayed()) return true;
     }
-
     return false;
   }
 
@@ -459,28 +395,20 @@ export class NavigationPage {
   private async countInteractableElements(locator: By): Promise<number> {
     const elements = await this.driver.findElements(locator);
     let count = 0;
-
-    for (const element of elements) {
-      if (await this.isInteractable(element)) {
-        count++;
-      }
+    for (const el of elements) {
+      if (await this.isInteractable(el)) count++;
     }
-
     return count;
   }
 
   private async isInteractable(element: WebElement): Promise<boolean> {
-    if (!(await element.isDisplayed()) || !(await element.isEnabled())) {
-      return false;
-    }
-
+    if (!(await element.isDisplayed()) || !(await element.isEnabled())) return false;
     const rect = await element.getRect();
     return rect.width > 0 && rect.height > 0 && rect.x + rect.width > 0 && rect.y + rect.height > 0;
   }
 
   private async clickElement(element: WebElement): Promise<void> {
-    await this.driver.executeScript("arguments[0].scrollIntoView({block: 'center', inline: 'center'});", element);
-
+    await this.driver.executeScript("arguments[0].scrollIntoView({block:'center',inline:'center'});", element);
     try {
       await element.click();
     } catch {
@@ -492,17 +420,14 @@ export class NavigationPage {
     await this.clickElement(input);
     await input.sendKeys(Key.chord(Key.CONTROL, "a"));
     await input.sendKeys(Key.DELETE);
-
     await this.driver.wait(async () => {
-      const currentValue = await input.getAttribute("value");
-      return currentValue === "";
-    }, appConfig.timeoutMs, "Expected input to be cleared before typing");
-
+      const current = await input.getAttribute("value");
+      return current === "";
+    }, portalConfig.timeoutMs, "Expected input to be cleared");
     await input.sendKeys(value);
-
     await this.driver.wait(async () => {
-      const currentValue = await input.getAttribute("value");
-      return currentValue === value;
-    }, appConfig.timeoutMs, `Expected input value to be "${value}"`);
+      const current = await input.getAttribute("value");
+      return current === value;
+    }, portalConfig.timeoutMs, `Expected input value to be "${value}"`);
   }
 }

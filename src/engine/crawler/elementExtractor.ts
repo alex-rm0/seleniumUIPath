@@ -65,7 +65,6 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
             }
           }
           if (!labelText) {
-            // Look for a wrapping <label> ancestor
             var ancestor = el.parentNode;
             var depth = 0;
             while (ancestor && depth < 4) {
@@ -86,7 +85,6 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
         var val = null;
         try { if (el.value !== undefined && el.value !== '') val = String(el.value).substring(0, 80); } catch(e) {}
 
-        // Stable CSS selector — skip dynamic IDs, prefer stable attributes
         var stableCls = [];
         try {
           if (el.classList) {
@@ -116,7 +114,6 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
                              css = tag + '.' + stableCls.slice(0, 3).join('.');
         else if (role)       css = tag + '[role="' + role + '"]';
 
-        // XPath — skip dynamic IDs
         var xpth = '';
         try {
           if (id && !isDynId) {
@@ -147,26 +144,14 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
         try { if (el.classList) for (var ci = 0; ci < el.classList.length; ci++) cls.push(el.classList[ci]); } catch(e) {}
 
         results.push({
-          tag: tag,
-          type: type || null,
-          role: role || null,
-          id: (id && !isDynId) ? id : null,
-          name: name || null,
-          lbl: labelText || null,
-          ph: ph || null,
-          al: al || null,
-          adb: adb || null,
-          tid: tid || null,
-          text: text || null,
-          val: val || null,
-          href: href || null,
-          iconClass: childIconClass || null,
-          iconTestId: childIconTestId || null,
-          cls: cls,
-          css: css,
-          xp: xpth,
-          w: el.offsetWidth || 0,
-          h: el.offsetHeight || 0
+          tag: tag, type: type || null, role: role || null,
+          id: (id && !isDynId) ? id : null, name: name || null,
+          lbl: labelText || null, ph: ph || null, al: al || null,
+          adb: adb || null, tid: tid || null, text: text || null,
+          val: val || null, href: href || null,
+          iconClass: childIconClass || null, iconTestId: childIconTestId || null,
+          cls: cls, css: css, xp: xpth,
+          w: el.offsetWidth || 0, h: el.offsetHeight || 0
         });
       } catch(e) {}
     }
@@ -182,7 +167,7 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
   let parsed: RawElement[];
   try {
     parsed = JSON.parse(raw) as RawElement[];
-  } catch (e) {
+  } catch {
     console.warn("  [warn] failed to parse extraction result");
     return [];
   }
@@ -191,9 +176,7 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
 
   return parsed
     .filter((el) => {
-      // Must have visible dimensions
       if (el.w <= 0 || el.h <= 0) return false;
-      // Must have at least one identifying attribute useful for tests
       const hasIconIdentity = el.iconClass || el.iconTestId;
       const hasIdentity = el.lbl || el.al || el.ph || el.tid || el.id || hasIconIdentity ||
         (el.text && el.text.trim().length > 0) || el.href ||
@@ -201,47 +184,18 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
       return hasIdentity;
     })
     .map((el) => ({
-      tag: el.tag,
-      type: el.type,
-      role: el.role,
-      id: el.id,
-      name: el.name,
-      label: el.lbl,
-      placeholder: el.ph,
-      ariaLabel: el.al,
-      ariaDescribedBy: el.adb,
-      testId: el.tid,
-      text: el.text,
-      value: el.val,
-      href: el.href,
-      iconClass: el.iconClass,
-      iconTestId: el.iconTestId,
-      classes: el.cls,
-      cssSelector: el.css,
-      xpath: el.xp,
-      interactable: true,
+      tag: el.tag, type: el.type, role: el.role, id: el.id, name: el.name,
+      label: el.lbl, placeholder: el.ph, ariaLabel: el.al, ariaDescribedBy: el.adb,
+      testId: el.tid, text: el.text, value: el.val, href: el.href,
+      iconClass: el.iconClass, iconTestId: el.iconTestId,
+      classes: el.cls, cssSelector: el.css, xpath: el.xp, interactable: true,
     }));
 }
 
 interface RawElement {
-  tag: string;
-  type: string | null;
-  role: string | null;
-  id: string | null;
-  name: string | null;
-  lbl: string | null;
-  ph: string | null;
-  al: string | null;
-  adb: string | null;
-  tid: string | null;
-  text: string | null;
-  val: string | null;
-  href: string | null;
-  iconClass: string | null;
-  iconTestId: string | null;
-  cls: string[];
-  css: string;
-  xp: string;
-  w: number;
-  h: number;
+  tag: string; type: string | null; role: string | null; id: string | null;
+  name: string | null; lbl: string | null; ph: string | null; al: string | null;
+  adb: string | null; tid: string | null; text: string | null; val: string | null;
+  href: string | null; iconClass: string | null; iconTestId: string | null;
+  cls: string[]; css: string; xp: string; w: number; h: number;
 }

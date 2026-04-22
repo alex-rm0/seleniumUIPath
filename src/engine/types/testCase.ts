@@ -1,10 +1,7 @@
 export interface TestCaseInput {
   username: string;
   password: string;
-  marketName?: string;
-  marketRename?: string;
-  transportTypeName?: string;
-  transportTypeRename?: string;
+  [key: string]: string | undefined;
 }
 
 export interface TestCaseExpected {
@@ -13,19 +10,7 @@ export interface TestCaseExpected {
   expectedAlertType?: "success" | "error";
   shouldLogout?: boolean;
   shouldStayLoggedOutAfterBack?: boolean;
-  navigationFlow?:
-    | "marketsToLocations"
-    | "noDuplicateMarketsTab"
-    | "switchMarketsAndLocationsTabs"
-    | "logoutWithOpenTabs"
-    | "marketsTableLoads"
-    | "refreshMarketsTable"
-    | "editWesternEuropeMarket"
-    | "locationsTableLoads"
-    | "refreshLocationsTable"
-    | "editPortoMarselhaLocation"
-    | "createEditDeleteMarket"
-    | "createEditDeleteTransportType";
+  navigationFlow?: string;
 }
 
 export interface TestCase {

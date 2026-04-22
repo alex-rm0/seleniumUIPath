@@ -1,18 +1,23 @@
 import * as fs from "fs";
 import * as path from "path";
+import { WebDriver } from "selenium-webdriver";
 import { createDriver } from "../core/driverFactory";
 import { ensureDirectoryExists } from "../core/fileSystem";
-import { crawlPages, PAGE_KEYS, PAGE_LABELS, PageKey } from "./pageCrawler";
-import { ElementMap } from "./types";
-import { appConfig } from "../config/appConfig";
+import { CrawledPage, ElementMap } from "./types";
+
+export interface CrawlRegistry<K extends string> {
+  PAGE_KEYS: K[];
+  PAGE_LABELS: Record<K, string>;
+  crawlPages: (driver: WebDriver, requested: Set<K>) => Promise<CrawledPage[]>;
+}
 
 // ─── CLI argument parsing ─────────────────────────────────────────────────────
 
-function parseArgs(): Set<PageKey> {
+export function parsePageArgs<K extends string>(pageKeys: K[]): Set<K> {
   const args = process.argv.slice(2);
   const pagesFlag = args.find((a) => a.startsWith("--pages=") || a === "--pages");
 
-  if (!pagesFlag) return new Set(PAGE_KEYS);
+  if (!pagesFlag) return new Set(pageKeys);
 
   const raw = pagesFlag.startsWith("--pages=")
     ? pagesFlag.slice("--pages=".length)
@@ -21,66 +26,69 @@ function parseArgs(): Set<PageKey> {
   const requested = raw
     .split(",")
     .map((s) => s.trim().toLowerCase())
-    .filter((s) => PAGE_KEYS.includes(s as PageKey)) as PageKey[];
+    .filter((s) => pageKeys.includes(s as K)) as K[];
 
   const invalid = raw
     .split(",")
     .map((s) => s.trim().toLowerCase())
-    .filter((s) => s && !PAGE_KEYS.includes(s as PageKey));
+    .filter((s) => s && !pageKeys.includes(s as K));
 
   if (invalid.length > 0) {
     console.warn(`[warn] Unknown page(s) ignored: ${invalid.join(", ")}`);
-    console.warn(`       Available: ${PAGE_KEYS.join(", ")}`);
+    console.warn(`       Available: ${pageKeys.join(", ")}`);
   }
 
   if (requested.length === 0) {
     console.warn("[warn] No valid pages specified — crawling all pages");
-    return new Set(PAGE_KEYS);
+    return new Set(pageKeys);
   }
 
   return new Set(requested);
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+// ─── Main crawl runner ────────────────────────────────────────────────────────
 
-async function run(): Promise<void> {
-  const requested = parseArgs();
+export async function runCrawl<K extends string>(
+  registry: CrawlRegistry<K>,
+  baseUrl: string
+): Promise<void> {
+  const requested = parsePageArgs(registry.PAGE_KEYS);
 
-  console.log("=== PharmaNova UI Element Crawler ===");
-  console.log(`Target : ${appConfig.baseUrl}`);
-  console.log(`Pages  : ${[...requested].map((k) => PAGE_LABELS[k]).join(", ")}`);
+  console.log("=== UI Element Crawler ===");
+  console.log(`Target : ${baseUrl}`);
+  console.log(`Pages  : ${[...requested].map((k) => registry.PAGE_LABELS[k]).join(", ")}`);
   console.log("");
 
   const driver = await createDriver();
 
   try {
-    const pages = await crawlPages(driver, requested);
+    const pages = await registry.crawlPages(driver, requested);
 
     if (pages.length === 0) {
       console.log("No pages were crawled.");
       return;
     }
 
-    // Per-page files in element-map/pages/<key>.json
     const pagesFolder = ensureDirectoryExists("element-map/pages");
     for (const page of pages) {
       const filePath = path.join(pagesFolder, `${page.key}.json`);
       fs.writeFileSync(filePath, JSON.stringify(page, null, 2), "utf8");
     }
 
-    // Combined latest report
     const elementMapFolder = ensureDirectoryExists("element-map");
     const elementMap: ElementMap = {
       generatedAt: new Date().toISOString(),
-      baseUrl: appConfig.baseUrl,
+      baseUrl,
       pages,
     };
-    const latestPath = path.join(elementMapFolder, "latest.json");
-    fs.writeFileSync(latestPath, JSON.stringify(elementMap, null, 2), "utf8");
+    fs.writeFileSync(
+      path.join(elementMapFolder, "latest.json"),
+      JSON.stringify(elementMap, null, 2),
+      "utf8"
+    );
 
     const totalElements = pages.reduce((sum, p) => sum + p.elements.length, 0);
 
-    console.log("");
     console.log("=== Crawl complete ===");
     console.log(`Pages crawled  : ${pages.length}`);
     console.log(`Total elements : ${totalElements}`);
@@ -95,9 +103,3 @@ async function run(): Promise<void> {
     await driver.quit();
   }
 }
-
-run().catch((err: unknown) => {
-  const message = err instanceof Error ? err.stack ?? err.message : String(err);
-  console.error("Crawler failed:", message);
-  process.exit(1);
-});

@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "ts-node src/main.ts",
-    "crawl": "ts-node src/crawler/crawlerMain.ts",
+    "crawl": "ts-node src/crawl.ts",
     "clean": "powershell -Command \"if (Test-Path dist) { Remove-Item -Recurse -Force dist }; if (Test-Path reports) { Remove-Item -Recurse -Force reports }\""
   },
   "keywords": [

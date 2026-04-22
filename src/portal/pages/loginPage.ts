@@ -1,5 +1,5 @@
 import { By, until, WebDriver } from "selenium-webdriver";
-import { appConfig } from "../config/appConfig";
+import { portalConfig } from "../config/portalConfig";
 
 export class LoginPage {
   private readonly usernameInput = By.css('input[type="text"]');
@@ -13,8 +13,8 @@ export class LoginPage {
   constructor(private readonly driver: WebDriver) {}
 
   public async open(): Promise<void> {
-    await this.driver.get(appConfig.baseUrl);
-    await this.driver.wait(until.elementLocated(this.usernameInput), appConfig.timeoutMs);
+    await this.driver.get(portalConfig.baseUrl);
+    await this.driver.wait(until.elementLocated(this.usernameInput), portalConfig.timeoutMs);
   }
 
   public async login(username: string, password: string): Promise<void> {
@@ -29,40 +29,36 @@ export class LoginPage {
     if (!(await this.isLogoutButtonVisible())) {
       const menu = await this.driver.wait(
         until.elementLocated(this.menuButton),
-        appConfig.timeoutMs
+        portalConfig.timeoutMs
       );
       await menu.click();
     }
 
     const button = await this.driver.wait(
       until.elementLocated(this.logoutButton),
-      appConfig.timeoutMs
+      portalConfig.timeoutMs
     );
-    await this.driver.wait(until.elementIsVisible(button), appConfig.timeoutMs);
-    await this.driver.wait(until.elementIsEnabled(button), appConfig.timeoutMs);
+    await this.driver.wait(until.elementIsVisible(button), portalConfig.timeoutMs);
+    await this.driver.wait(until.elementIsEnabled(button), portalConfig.timeoutMs);
     await button.click();
   }
 
   private async isLogoutButtonVisible(): Promise<boolean> {
     const buttons = await this.driver.findElements(this.logoutButton);
-
     for (const button of buttons) {
-      if (await button.isDisplayed()) {
-        return true;
-      }
+      if (await button.isDisplayed()) return true;
     }
-
     return false;
   }
 
   public async isLoginPageVisible(): Promise<boolean> {
-    const username = await this.driver.wait(until.elementLocated(this.usernameInput), appConfig.timeoutMs);
-    const password = await this.driver.wait(until.elementLocated(this.passwordInput), appConfig.timeoutMs);
-    const submit = await this.driver.wait(until.elementLocated(this.submitButton), appConfig.timeoutMs);
+    const username = await this.driver.wait(until.elementLocated(this.usernameInput), portalConfig.timeoutMs);
+    const password = await this.driver.wait(until.elementLocated(this.passwordInput), portalConfig.timeoutMs);
+    const submit   = await this.driver.wait(until.elementLocated(this.submitButton), portalConfig.timeoutMs);
 
-    await this.driver.wait(until.elementIsVisible(username), appConfig.timeoutMs);
-    await this.driver.wait(until.elementIsVisible(password), appConfig.timeoutMs);
-    await this.driver.wait(until.elementIsVisible(submit), appConfig.timeoutMs);
+    await this.driver.wait(until.elementIsVisible(username), portalConfig.timeoutMs);
+    await this.driver.wait(until.elementIsVisible(password), portalConfig.timeoutMs);
+    await this.driver.wait(until.elementIsVisible(submit), portalConfig.timeoutMs);
 
     return true;
   }
@@ -76,18 +72,15 @@ export class LoginPage {
   }
 
   private async getAlertText(locator: By): Promise<string> {
-    const element = await this.driver.wait(until.elementLocated(locator), appConfig.timeoutMs);
-    await this.driver.wait(until.elementIsVisible(element), appConfig.timeoutMs);
+    const element = await this.driver.wait(until.elementLocated(locator), portalConfig.timeoutMs);
+    await this.driver.wait(until.elementIsVisible(element), portalConfig.timeoutMs);
 
     const text = await this.driver.wait(async () => {
-      const text = await element.getText();
-      return text.trim().length > 0 ? text : false;
-    }, appConfig.timeoutMs);
+      const t = await element.getText();
+      return t.trim().length > 0 ? t : false;
+    }, portalConfig.timeoutMs);
 
-    if (!text) {
-      throw new Error("Expected alert text to be visible");
-    }
-
+    if (!text) throw new Error("Expected alert text to be visible");
     return text;
   }
 }

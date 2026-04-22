@@ -11,14 +11,14 @@ export function writeJsonReport(results: TestResult[]): string {
   return fullPath;
 }
 
-export function writeHtmlReport(results: TestResult[]): string {
+export function writeHtmlReport(results: TestResult[], projectName: string): string {
   const folder: string = ensureDirectoryExists("reports");
   const fileName: string = `test-results-${timestampForFileName()}.html`;
   const fullPath: string = path.join(folder, fileName);
 
-  const passed: number = results.filter((result) => result.status === "PASS").length;
+  const passed: number = results.filter((r) => r.status === "PASS").length;
   const failed: number = results.length - passed;
-  const totalDuration: number = results.reduce((total, item) => total + item.durationMs, 0);
+  const totalDuration: number = results.reduce((total, r) => total + r.durationMs, 0);
 
   const rows: string = results
     .map((result) => {
@@ -41,7 +41,7 @@ export function writeHtmlReport(results: TestResult[]): string {
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>PharmaNova QA Automation Report</title>
+    <title>${escapeHtml(projectName)} — QA Report</title>
     <style>
       body { font-family: Arial, sans-serif; margin: 24px; }
       .kpi { display: inline-block; margin-right: 16px; }
@@ -53,7 +53,7 @@ export function writeHtmlReport(results: TestResult[]): string {
     </style>
   </head>
   <body>
-    <h1>PharmaNova - Selenium + UiPath Demo</h1>
+    <h1>${escapeHtml(projectName)} — QA Automation Report</h1>
     <div class="kpi"><strong>Total:</strong> ${results.length}</div>
     <div class="kpi"><strong>Passed:</strong> ${passed}</div>
     <div class="kpi"><strong>Failed:</strong> ${failed}</div>

@@ -1,9 +1,11 @@
 import * as fs from "fs";
 import * as path from "path";
-import { createDriver } from "./core/driverFactory";
-import { writeHtmlReport, writeJsonReport } from "./core/reporter";
-import { runCase } from "./core/testRunner";
-import { TestCase, TestResult } from "./types/testCase";
+import { createDriver } from "./engine/core/driverFactory";
+import { writeHtmlReport, writeJsonReport } from "./engine/core/reporter";
+import { runCase } from "./engine/core/testRunner";
+import { TestCase, TestResult } from "./engine/types/testCase";
+import { executeFlow } from "./portal/flows/flowRegistry";
+import { portalConfig } from "./portal/config/portalConfig";
 
 function parseRequestedIds(): Set<string> | null {
   const args = process.argv.slice(2);
@@ -36,9 +38,7 @@ async function execute(): Promise<void> {
     const notFound = [...requestedIds].filter(
       (id) => !allCases.some((tc) => tc.id.toUpperCase() === id)
     );
-    if (notFound.length > 0) {
-      console.warn(`[warn] Testes não encontrados: ${notFound.join(", ")}`);
-    }
+    if (notFound.length > 0) console.warn(`[warn] Testes não encontrados: ${notFound.join(", ")}`);
 
     if (testCases.length === 0) {
       console.error("Nenhum teste válido encontrado para os IDs fornecidos.");
@@ -58,7 +58,7 @@ async function execute(): Promise<void> {
   for (const testCase of testCases) {
     const driver = await createDriver();
     try {
-      const result: TestResult = await runCase(driver, testCase);
+      const result: TestResult = await runCase(driver, testCase, executeFlow);
       results.push(result);
       console.log(`${result.id} - ${result.status} - ${result.details}`);
     } finally {
@@ -67,13 +67,13 @@ async function execute(): Promise<void> {
   }
 
   const jsonPath: string = writeJsonReport(results);
-  const htmlPath: string = writeHtmlReport(results);
+  const htmlPath: string = writeHtmlReport(results, portalConfig.projectName);
   console.log(`\nRelatório JSON: ${jsonPath}`);
   console.log(`Relatório HTML: ${htmlPath}`);
 }
 
 function loadTestCases(): TestCase[] {
-  const sourceFile: string = path.resolve("src/tests/testCases.json");
+  const sourceFile: string = path.resolve("src/portal/tests/testCases.json");
   const rawContent: string = fs.readFileSync(sourceFile, "utf8");
   return JSON.parse(rawContent) as TestCase[];
 }
