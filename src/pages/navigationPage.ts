@@ -22,6 +22,11 @@ export class NavigationPage {
   private readonly confirmDeleteButton = By.xpath("//button[contains(@class,'buttonClass') and (contains(normalize-space(),'Sim') or contains(normalize-space(),'Confirmar') or contains(normalize-space(),'Eliminar'))]");
   private readonly locationInfoTitle = By.xpath("//*[contains(normalize-space(), 'Inform') and contains(normalize-space(), 'Localiza')]");
   private readonly portoMarselhaInput = By.xpath("//input[@value='Porto de Marselha']");
+  private readonly transportTypesButton = By.xpath("//div[@role='button'][.//span[contains(normalize-space(),'Tipos de Transporte')]]");
+  private readonly newTransportTypeButton = By.xpath("//button[.//*[@data-testid='AddCircleOutlineOutlinedIcon']]");
+  private readonly saveTransportTypeButton = By.css("button i.pi-save");
+  private readonly transportTypeNameInput = By.css("input.MuiInputBase-input[type='text']");
+  private readonly anyTableRow = By.css("tr.p-selectable-row");
 
   constructor(private readonly driver: WebDriver) {}
 
@@ -207,6 +212,88 @@ export class NavigationPage {
     }
   }
 
+  public async openTransportTypes(): Promise<void> {
+    await this.ensureMenuItemInteractable(this.transportTypesButton);
+    await this.clickMenuItem(this.transportTypesButton);
+    await this.driver.wait(until.urlContains("transport-types"), appConfig.timeoutMs);
+    await this.findInteractableElement(this.anyTableRow);
+  }
+
+  public async createTransportType(name: string): Promise<void> {
+    const newBtn = await this.findInteractableElement(this.newTransportTypeButton);
+    await this.clickElement(newBtn);
+
+    await this.driver.wait(until.urlContains("transportTypeConfigCrud"), appConfig.timeoutMs);
+    const nameInput = await this.findInteractableElement(this.transportTypeNameInput);
+    await this.replaceInputValue(nameInput, name);
+
+    const saveBtn = await this.findInteractableElement(this.saveTransportTypeButton);
+    await this.clickElement(saveBtn);
+
+    await this.waitAfterSave();
+    await this.openTransportTypesPageDirectly();
+    await this.refreshTransportTypesTable();
+  }
+
+  public async editTransportTypeName(name: string, newName: string): Promise<void> {
+    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
+    const row = await this.findInteractableElement(rowLocator);
+    await this.clickElement(row);
+
+    const editIcon = await this.findInteractableElement(this.editButton);
+    await this.clickElement(editIcon);
+
+    await this.driver.wait(until.urlContains("transportTypeConfigCrud"), appConfig.timeoutMs);
+    const nameInput = await this.findInteractableElement(this.transportTypeNameInput);
+    await this.replaceInputValue(nameInput, newName);
+
+    const saveBtn = await this.findInteractableElement(this.saveTransportTypeButton);
+    await this.clickElement(saveBtn);
+
+    await this.waitAfterSave();
+    await this.openTransportTypesPageDirectly();
+    await this.refreshTransportTypesTable();
+  }
+
+  public async deleteTransportType(name: string): Promise<void> {
+    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
+    const row = await this.findInteractableElement(rowLocator);
+    await this.clickElement(row);
+
+    const deleteBtn = await this.findInteractableElement(this.deleteMarketButton);
+    await this.clickElement(deleteBtn);
+
+    try {
+      const confirmBtn = await this.driver.wait(
+        until.elementLocated(this.confirmDeleteButton),
+        3000
+      );
+      await this.driver.wait(until.elementIsVisible(confirmBtn), 3000);
+      await this.clickElement(confirmBtn);
+    } catch {
+      // sem diálogo de confirmação — o delete foi imediato
+    }
+
+    await this.waitAfterSave();
+    await this.refreshTransportTypesTable();
+  }
+
+  public async expectTransportTypeVisible(name: string): Promise<void> {
+    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
+    await this.findInteractableElement(rowLocator);
+  }
+
+  public async expectTransportTypeNotVisible(name: string): Promise<void> {
+    await this.driver.sleep(1000);
+    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
+    const rows = await this.driver.findElements(rowLocator);
+    for (const row of rows) {
+      if (await row.isDisplayed()) {
+        throw new Error(`Tipo de Transporte "${name}" devia ter sido eliminado mas ainda está visível`);
+      }
+    }
+  }
+
   public async closeCurrentTab(): Promise<void> {
     const closeIcon = await this.findLastInteractableElement(this.tabCloseIcons);
     await this.clickElement(closeIcon);
@@ -225,6 +312,21 @@ export class NavigationPage {
     await this.driver.get(`${baseUrl}#/home/markets`);
     await this.driver.wait(until.urlContains("markets"), appConfig.timeoutMs);
     await this.expectWesternEuropeVisible();
+  }
+
+  private async openTransportTypesPageDirectly(): Promise<void> {
+    const currentUrl = await this.driver.getCurrentUrl();
+    const baseUrl = currentUrl.split("#")[0];
+
+    await this.driver.get(`${baseUrl}#/home/transport-types`);
+    await this.driver.wait(until.urlContains("transport-types"), appConfig.timeoutMs);
+    await this.findInteractableElement(this.anyTableRow);
+  }
+
+  private async refreshTransportTypesTable(): Promise<void> {
+    const refreshIcon = await this.findInteractableElement(this.refreshButton);
+    await this.clickElement(refreshIcon);
+    await this.findInteractableElement(this.anyTableRow);
   }
 
   private async ensureMenuItemInteractable(locator: By): Promise<void> {

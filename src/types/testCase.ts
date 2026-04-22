@@ -3,6 +3,8 @@ export interface TestCaseInput {
   password: string;
   marketName?: string;
   marketRename?: string;
+  transportTypeName?: string;
+  transportTypeRename?: string;
 }
 
 export interface TestCaseExpected {
@@ -22,7 +24,8 @@ export interface TestCaseExpected {
     | "locationsTableLoads"
     | "refreshLocationsTable"
     | "editPortoMarselhaLocation"
-    | "createEditDeleteMarket";
+    | "createEditDeleteMarket"
+    | "createEditDeleteTransportType";
 }
 
 export interface TestCase {

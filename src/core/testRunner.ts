@@ -133,6 +133,30 @@ export async function runCase(driver: WebDriver, testCase: TestCase): Promise<Te
           throw new Error("Esperava regressar à página de login após logout");
         }
       }
+
+      if (testCase.expected.navigationFlow === "createEditDeleteTransportType") {
+        const transportTypeName = testCase.input.transportTypeName;
+        const transportTypeRename = testCase.input.transportTypeRename;
+
+        if (!transportTypeName || !transportTypeRename) {
+          throw new Error("TC createEditDeleteTransportType requer transportTypeName e transportTypeRename no input");
+        }
+
+        await navigation.openSideMenu();
+        await navigation.openTransportTypes();
+        await navigation.createTransportType(transportTypeName);
+        await navigation.expectTransportTypeVisible(transportTypeName);
+        await navigation.editTransportTypeName(transportTypeName, transportTypeRename);
+        await navigation.expectTransportTypeVisible(transportTypeRename);
+        await navigation.deleteTransportType(transportTypeRename);
+        await navigation.expectTransportTypeNotVisible(transportTypeRename);
+        await page.logout();
+
+        const returnedToLogin = await page.isLoginPageVisible();
+        if (!returnedToLogin) {
+          throw new Error("Esperava regressar à página de login após logout");
+        }
+      }
     } else {
       actualMessage = testCase.expected.expectedAlertType === "error"
         ? await page.getErrorMessage()

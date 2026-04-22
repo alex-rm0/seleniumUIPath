@@ -252,5 +252,21 @@
       "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
       "navigationFlow": "createEditDeleteMarket"
     }
+  },
+  {
+    "id": "TC019",
+    "title": "Criar, editar nome e eliminar tipo de transporte",
+    "processArea": "Transport Types",
+    "input": {
+      "username": "sandrodev",
+      "password": "Sandrodev-123",
+      "transportTypeName": "Teste TT",
+      "transportTypeRename": "Teste TT Rename"
+    },
+    "expected": {
+      "shouldPass": true,
+      "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
+      "navigationFlow": "createEditDeleteTransportType"
+    }
   }
 ]
