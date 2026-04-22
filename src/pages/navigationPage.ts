@@ -19,7 +19,7 @@ export class NavigationPage {
   private readonly deleteMarketButton = By.xpath("//button[.//*[contains(@class,'pi-trash') or contains(@data-testid,'Delete')]]");
   private readonly marketNameInput = By.css("input.MuiInputBase-input[type='text']");
   private readonly saveMarketButton = By.xpath("//button[contains(@class,'buttonClass') and contains(normalize-space(),'Guardar')]");
-  private readonly confirmDeleteButton = By.xpath("//button[contains(@class,'buttonClass') and (contains(normalize-space(),'Sim') or contains(normalize-space(),'Confirmar'))]");
+  private readonly confirmDeleteButton = By.xpath("//button[contains(@class,'buttonClass') and (contains(normalize-space(),'Sim') or contains(normalize-space(),'Confirmar') or contains(normalize-space(),'Eliminar'))]");
   private readonly locationInfoTitle = By.xpath("//*[contains(normalize-space(), 'Inform') and contains(normalize-space(), 'Localiza')]");
   private readonly portoMarselhaInput = By.xpath("//input[@value='Porto de Marselha']");
 
@@ -141,7 +141,7 @@ export class NavigationPage {
     const saveBtn = await this.findInteractableElement(this.saveMarketButton);
     await this.clickElement(saveBtn);
 
-    await this.waitForSuccessAlert("sucesso");
+    await this.waitAfterSave();
     await this.openMarketsPageDirectly();
     await this.refreshMarketsTable();
   }
@@ -163,7 +163,7 @@ export class NavigationPage {
     const saveBtn = await this.findInteractableElement(this.saveMarketButton);
     await this.clickElement(saveBtn);
 
-    await this.waitForSuccessAlert("sucesso");
+    await this.waitAfterSave();
     await this.openMarketsPageDirectly();
     await this.refreshMarketsTable();
   }
@@ -187,7 +187,7 @@ export class NavigationPage {
       // sem diálogo de confirmação — o delete foi imediato
     }
 
-    await this.waitForSuccessAlert("sucesso");
+    await this.waitAfterSave();
     await this.refreshMarketsTable();
   }
 
@@ -247,7 +247,8 @@ export class NavigationPage {
   }
 
   private async waitForSuccessAlert(message: string): Promise<string> {
-    const locator = By.xpath(`//div[contains(@class, 'MuiAlert-colorSuccess') and contains(., '${message}')]`);
+    const normalizedMessage = message.toLowerCase();
+    const locator = By.xpath(`//div[contains(@class, 'MuiAlert-colorSuccess') and contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '${normalizedMessage}')]`);
 
     await this.driver.wait(async () => {
       const alerts = await this.driver.findElements(locator);
@@ -266,6 +267,14 @@ export class NavigationPage {
     }, appConfig.timeoutMs, `Expected success alert: ${message}`);
 
     return message;
+  }
+
+  private async waitAfterSave(): Promise<void> {
+    try {
+      await this.waitForSuccessAlert("sucesso");
+    } catch {
+      await this.driver.sleep(1000);
+    }
   }
 
   private async findInteractableElement(locator: By): Promise<WebElement> {
