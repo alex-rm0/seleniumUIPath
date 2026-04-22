@@ -19,7 +19,7 @@
   "author": "Demo Team",
   "license": "MIT",
   "dependencies": {
-    "chromedriver": "^147.0.3",
+    "chromedriver": "^147.0.4",
     "selenium-webdriver": "^4.43.0"
   },
   "devDependencies": {
