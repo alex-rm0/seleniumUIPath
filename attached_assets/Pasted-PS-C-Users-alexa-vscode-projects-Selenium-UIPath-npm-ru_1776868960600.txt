@@ -1,0 +1,49 @@
+PS C:\Users\alexa\.vscode\projects\Selenium + UIPath> npm run crawl -- --pages transport-types
+
+> pharmanova-qa-automation@1.0.0 crawl
+> ts-node src/crawler/crawlerMain.ts --pages transport-types
+
+[warn] Unknown page(s) ignored: transport-types
+       Available: login, dashboard, markets, markets-edit, locations, locations-edit
+[warn] No valid pages specified — crawling all pages
+=== PharmaNova UI Element Crawler ===
+Target : https://dev.nexus.shipperform.devlop.systems/#/login
+Pages  : Login, Dashboard, Markets, Markets - Edit (Western Europe), Locations, Locations - Edit (Porto de Marselha)
+
+[driverFactory] using chromedriver path: C:\Users\alexa\.vscode\projects\Selenium + UIPath\node_modules\chromedriver\lib\chromedriver\chromedriver.exe
+
+DevTools listening on ws://127.0.0.1:54961/devtools/browser/98d20ee3-8f25-44c3-b1ac-aa8167c99bc1
+  [crawl] extracting: Login (https://dev.nexus.shipperform.devlop.systems/#/login)
+  [debug] DOM: 103 total, 2 inputs, 6 buttons
+  [crawl] found 4 element(s) on "Login"
+  [crawl] logging in...
+  [crawl] login successful
+  [crawl] extracting: Dashboard (https://dev.nexus.shipperform.devlop.systems/#/home)
+  [debug] DOM: 274 total, 0 inputs, 13 buttons
+  [crawl] found 25 element(s) on "Dashboard"
+  [crawl] extracting: Markets (https://dev.nexus.shipperform.devlop.systems/#/home/markets)
+  [debug] DOM: 585 total, 28 inputs, 28 buttons
+  [crawl] found 98 element(s) on "Markets"
+  [crawl] extracting: Markets - Edit (Western Europe) (https://dev.nexus.shipperform.devlop.systems/#/home/markets/marketConfigCrud)
+  [debug] DOM: 318 total, 2 inputs, 16 buttons
+  [crawl] found 30 element(s) on "Markets - Edit (Western Europe)"
+[24036:17780:0422/154216.993:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
+  [crawl] extracting: Locations (https://dev.nexus.shipperform.devlop.systems/#/home/locations)
+  [debug] DOM: 879 total, 42 inputs, 35 buttons
+  [crawl] found 133 element(s) on "Locations"
+  [crawl] extracting: Locations - Edit (Porto de Marselha) (https://dev.nexus.shipperform.devlop.systems/#/home/locations/locationConfigCrud)
+  [debug] DOM: 412 total, 8 inputs, 21 buttons
+  [crawl] found 41 element(s) on "Locations - Edit (Porto de Marselha)"
+
+=== Crawl complete ===
+Pages crawled  : 6
+Total elements : 331
+Per-page files : element-map/pages/
+Combined       : element-map/latest.json
+
+  login.json — Login: 4 element(s)
+  dashboard.json — Dashboard: 25 element(s)
+  markets.json — Markets: 98 element(s)
+  markets-edit.json — Markets - Edit (Western Europe): 30 element(s)
+  locations.json — Locations: 133 element(s)
+  locations-edit.json — Locations - Edit (Porto de Marselha): 41 element(s)

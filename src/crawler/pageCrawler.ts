@@ -13,7 +13,9 @@ export type PageKey =
   | "markets"
   | "markets-edit"
   | "locations"
-  | "locations-edit";
+  | "locations-edit"
+  | "transport-types"
+  | "transport-types-edit";
 
 export const PAGE_KEYS: PageKey[] = [
   "login",
@@ -22,15 +24,19 @@ export const PAGE_KEYS: PageKey[] = [
   "markets-edit",
   "locations",
   "locations-edit",
+  "transport-types",
+  "transport-types-edit",
 ];
 
 export const PAGE_LABELS: Record<PageKey, string> = {
-  "login":          "Login",
-  "dashboard":      "Dashboard",
-  "markets":        "Markets",
-  "markets-edit":   "Markets - Edit (Western Europe)",
-  "locations":      "Locations",
-  "locations-edit": "Locations - Edit (Porto de Marselha)",
+  "login":                "Login",
+  "dashboard":            "Dashboard",
+  "markets":              "Markets",
+  "markets-edit":         "Markets - Edit (Western Europe)",
+  "locations":            "Locations",
+  "locations-edit":       "Locations - Edit (Porto de Marselha)",
+  "transport-types":      "Tipos de Transporte",
+  "transport-types-edit": "Tipos de Transporte - Edit (1ª entrada)",
 };
 
 // ─── Main entry point ─────────────────────────────────────────────────────────
@@ -50,6 +56,8 @@ export async function crawlPages(
     requested.has("markets") || requested.has("markets-edit");
   const needsLocations =
     requested.has("locations") || requested.has("locations-edit");
+  const needsTransportTypes =
+    requested.has("transport-types") || requested.has("transport-types-edit");
 
   // 1. Login page
   await navigateToLogin(driver);
@@ -86,6 +94,19 @@ export async function crawlPages(
     if (requested.has("locations-edit")) {
       await navigateToLocationsEdit(driver);
       results.push(await snapshot(driver, "locations-edit"));
+    }
+  }
+
+  // 6. Transport Types
+  if (needsTransportTypes) {
+    await openSideMenu(driver);
+    await navigateToTransportTypes(driver);
+    if (requested.has("transport-types")) results.push(await snapshot(driver, "transport-types"));
+
+    if (requested.has("transport-types-edit")) {
+      await navigateToTransportTypesEdit(driver);
+      results.push(await snapshot(driver, "transport-types-edit"));
+      await closeLastTab(driver);
     }
   }
 
@@ -202,6 +223,38 @@ async function navigateToLocationsEdit(driver: WebDriver): Promise<void> {
   await driver.wait(until.elementIsVisible(editEl), TIMEOUT);
   await editEl.click();
   await driver.wait(until.urlContains("locationConfigCrud"), TIMEOUT);
+  await driver.sleep(500);
+}
+
+async function navigateToTransportTypes(driver: WebDriver): Promise<void> {
+  const btn = By.xpath("//div[@role='button'][.//span[contains(normalize-space(),'Tipos de Transporte')]]");
+  const el = await driver.wait(until.elementLocated(btn), TIMEOUT);
+  await driver.wait(until.elementIsVisible(el), TIMEOUT);
+  await el.click();
+  await waitForSuccessAlert(driver, "Tab criado com sucesso");
+  // aguardar que a tabela carregue pelo menos uma linha
+  await driver.wait(
+    until.elementLocated(By.css("tr.p-selectable-row")),
+    TIMEOUT
+  );
+  await driver.sleep(500);
+}
+
+async function navigateToTransportTypesEdit(driver: WebDriver): Promise<void> {
+  const firstRow = By.css("tr.p-selectable-row");
+  const editIcon = By.css("button i.pi.pi-pencil.iconTable");
+
+  const rowEl = await driver.wait(until.elementLocated(firstRow), TIMEOUT);
+  await driver.executeScript("arguments[0].scrollIntoView({block:'center'});", rowEl);
+  await rowEl.click();
+  const editEl = await driver.wait(until.elementLocated(editIcon), TIMEOUT);
+  await driver.wait(until.elementIsVisible(editEl), TIMEOUT);
+  await editEl.click();
+  // aguardar que o formulário carregue (URL muda e aparece algum input)
+  await driver.wait(
+    until.elementLocated(By.css("input.MuiInputBase-input[type='text']")),
+    TIMEOUT
+  );
   await driver.sleep(500);
 }
 
