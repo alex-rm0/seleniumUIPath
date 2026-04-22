@@ -244,8 +244,8 @@
     "input": {
       "username": "sandrodev",
       "password": "Sandrodev-123",
-      "marketName": "QA Teste Mercado",
-      "marketRename": "QA Teste Mercado Renomeado"
+      "marketName": "Teste",
+      "marketRename": "Teste Rename"
     },
     "expected": {
       "shouldPass": true,

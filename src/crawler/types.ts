@@ -12,6 +12,8 @@ export interface ExtractedElement {
   text: string | null;
   value: string | null;
   href: string | null;
+  iconClass?: string | null;
+  iconTestId?: string | null;
   classes: string[];
   cssSelector: string;
   xpath: string;

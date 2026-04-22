@@ -37,6 +37,15 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
         var name = el.getAttribute('name');
         var adb  = el.getAttribute('aria-describedby');
         var href = el.getAttribute('href');
+        var childIconClass = null;
+        var childIconTestId = null;
+        try {
+          var icon = el.querySelector('i[class*="pi-"], svg[data-testid]');
+          if (icon) {
+            childIconClass = icon.getAttribute('class');
+            childIconTestId = icon.getAttribute('data-testid');
+          }
+        } catch(e) {}
 
         // Detect React-generated dynamic IDs (e.g. ":r0:", ":r1:")
         var isDynId = id && /^:[a-zA-Z0-9]+:$/.test(id);
@@ -97,6 +106,12 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
         else if (ph)         css = tag + '[placeholder="' + ph + '"]';
         else if (type && type !== 'button' && type !== 'submit')
                              css = tag + '[type="' + type + '"]';
+        else if (childIconTestId)
+                             css = tag + ' [data-testid="' + childIconTestId + '"]';
+        else if (childIconClass && childIconClass.indexOf('pi-') >= 0) {
+          var iconClasses = childIconClass.split(/\\s+/).filter(function(c) { return c && c.indexOf('pi-') >= 0; });
+          css = tag + ' i.' + iconClasses.join('.');
+        }
         else if (stableCls.length > 0)
                              css = tag + '.' + stableCls.slice(0, 3).join('.');
         else if (role)       css = tag + '[role="' + role + '"]';
@@ -108,6 +123,11 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
             xpth = '//*[@id="' + id + '"]';
           } else if (al) {
             xpth = '//' + tag + '[@aria-label="' + al + '"]';
+          } else if (childIconTestId) {
+            xpth = '//' + tag + '[.//*[@data-testid="' + childIconTestId + '"]]';
+          } else if (childIconClass && childIconClass.indexOf('pi-') >= 0) {
+            var piClass = childIconClass.split(/\\s+/).filter(function(c) { return c.indexOf('pi-') >= 0; })[0];
+            xpth = '//' + tag + '[.//i[contains(@class,"' + piClass + '")]]';
           } else if (text && tag !== 'input' && tag !== 'select' && tag !== 'textarea') {
             xpth = '//' + tag + '[normalize-space()="' + text.replace(/"/g, "'") + '"]';
           } else {
@@ -140,6 +160,8 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
           text: text || null,
           val: val || null,
           href: href || null,
+          iconClass: childIconClass || null,
+          iconTestId: childIconTestId || null,
           cls: cls,
           css: css,
           xp: xpth,
@@ -172,7 +194,8 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
       // Must have visible dimensions
       if (el.w <= 0 || el.h <= 0) return false;
       // Must have at least one identifying attribute useful for tests
-      const hasIdentity = el.lbl || el.al || el.ph || el.tid || el.id ||
+      const hasIconIdentity = el.iconClass || el.iconTestId;
+      const hasIdentity = el.lbl || el.al || el.ph || el.tid || el.id || hasIconIdentity ||
         (el.text && el.text.trim().length > 0) || el.href ||
         (el.type && el.type !== "button" && el.type !== "submit");
       return hasIdentity;
@@ -191,6 +214,8 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
       text: el.text,
       value: el.val,
       href: el.href,
+      iconClass: el.iconClass,
+      iconTestId: el.iconTestId,
       classes: el.cls,
       cssSelector: el.css,
       xpath: el.xp,
@@ -212,6 +237,8 @@ interface RawElement {
   text: string | null;
   val: string | null;
   href: string | null;
+  iconClass: string | null;
+  iconTestId: string | null;
   cls: string[];
   css: string;
   xp: string;

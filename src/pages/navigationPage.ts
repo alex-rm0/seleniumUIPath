@@ -1,4 +1,4 @@
-import { By, until, WebDriver, WebElement } from "selenium-webdriver";
+import { By, Key, until, WebDriver, WebElement } from "selenium-webdriver";
 import { appConfig } from "../config/appConfig";
 
 export class NavigationPage {
@@ -15,11 +15,13 @@ export class NavigationPage {
   private readonly marketInfoTitle = By.xpath("//*[normalize-space()='Informações do Mercado']");
   private readonly westernEuropeInput = By.xpath("//input[@value='Western Europe']");
   private readonly portoMarselhaRow = By.xpath("//tr[@role='row'][.//td[normalize-space()='Porto de Marselha']]");
-  private readonly newMarketButton = By.css("button i.pi.pi-plus");
-  private readonly deleteMarketButton = By.css("button i.pi.pi-trash");
+  private readonly newMarketButton = By.xpath("//button[.//*[contains(@class,'pi-plus') or contains(@data-testid,'Add') or contains(@data-testid,'AddCircle')]]");
+  private readonly deleteMarketButton = By.xpath("//button[.//*[contains(@class,'pi-trash') or contains(@data-testid,'Delete')]]");
   private readonly marketNameInput = By.css("input.MuiInputBase-input[type='text']");
   private readonly saveMarketButton = By.xpath("//button[contains(@class,'buttonClass') and contains(normalize-space(),'Guardar')]");
   private readonly confirmDeleteButton = By.xpath("//button[contains(@class,'buttonClass') and (contains(normalize-space(),'Sim') or contains(normalize-space(),'Confirmar'))]");
+  private readonly locationInfoTitle = By.xpath("//*[contains(normalize-space(), 'Inform') and contains(normalize-space(), 'Localiza')]");
+  private readonly portoMarselhaInput = By.xpath("//input[@value='Porto de Marselha']");
 
   constructor(private readonly driver: WebDriver) {}
 
@@ -50,13 +52,15 @@ export class NavigationPage {
   public async openMarkets(): Promise<void> {
     await this.ensureMenuItemInteractable(this.marketsButton);
     await this.clickMenuItem(this.marketsButton);
-    await this.waitForSuccessAlert("Tab criado com sucesso");
+    await this.driver.wait(until.urlContains("markets"), appConfig.timeoutMs);
+    await this.expectWesternEuropeVisible();
   }
 
   public async openLocations(): Promise<void> {
     await this.ensureMenuItemInteractable(this.locationsButton);
     await this.clickMenuItem(this.locationsButton);
-    await this.waitForSuccessAlert("Tab criado com sucesso");
+    await this.driver.wait(until.urlContains("locations"), appConfig.timeoutMs);
+    await this.expectPortoMarselhaVisible();
   }
 
   public async openMarketsAgainWithoutDuplicate(): Promise<void> {
@@ -119,8 +123,9 @@ export class NavigationPage {
     const editIcon = await this.findInteractableElement(this.editButton);
     await this.clickElement(editIcon);
 
-    await this.waitForSuccessAlert("Tab criado com sucesso");
     await this.driver.wait(until.urlContains("locationConfigCrud"), appConfig.timeoutMs);
+    await this.findInteractableElement(this.locationInfoTitle);
+    await this.findInteractableElement(this.portoMarselhaInput);
   }
 
   public async createMarket(name: string): Promise<void> {
@@ -131,14 +136,14 @@ export class NavigationPage {
     await this.findInteractableElement(this.marketInfoTitle);
 
     const nameInput = await this.findInteractableElement(this.marketNameInput);
-    await nameInput.clear();
-    await nameInput.sendKeys(name);
+    await this.replaceInputValue(nameInput, name);
 
     const saveBtn = await this.findInteractableElement(this.saveMarketButton);
     await this.clickElement(saveBtn);
 
     await this.waitForSuccessAlert("sucesso");
-    await this.closeCurrentTab();
+    await this.openMarketsPageDirectly();
+    await this.refreshMarketsTable();
   }
 
   public async editMarketName(name: string, newName: string): Promise<void> {
@@ -153,15 +158,14 @@ export class NavigationPage {
     await this.findInteractableElement(this.marketInfoTitle);
 
     const nameInput = await this.findInteractableElement(this.marketNameInput);
-    await this.driver.executeScript("arguments[0].value = '';", nameInput);
-    await nameInput.clear();
-    await nameInput.sendKeys(newName);
+    await this.replaceInputValue(nameInput, newName);
 
     const saveBtn = await this.findInteractableElement(this.saveMarketButton);
     await this.clickElement(saveBtn);
 
     await this.waitForSuccessAlert("sucesso");
-    await this.closeCurrentTab();
+    await this.openMarketsPageDirectly();
+    await this.refreshMarketsTable();
   }
 
   public async deleteMarket(name: string): Promise<void> {
@@ -184,6 +188,7 @@ export class NavigationPage {
     }
 
     await this.waitForSuccessAlert("sucesso");
+    await this.refreshMarketsTable();
   }
 
   public async expectMarketVisible(name: string): Promise<void> {
@@ -211,6 +216,15 @@ export class NavigationPage {
   private async clickMenuItem(locator: By): Promise<void> {
     const item = await this.findInteractableElement(locator);
     await this.clickElement(item);
+  }
+
+  private async openMarketsPageDirectly(): Promise<void> {
+    const currentUrl = await this.driver.getCurrentUrl();
+    const baseUrl = currentUrl.split("#")[0];
+
+    await this.driver.get(`${baseUrl}#/home/markets`);
+    await this.driver.wait(until.urlContains("markets"), appConfig.timeoutMs);
+    await this.expectWesternEuropeVisible();
   }
 
   private async ensureMenuItemInteractable(locator: By): Promise<void> {
@@ -361,5 +375,23 @@ export class NavigationPage {
     } catch {
       await this.driver.executeScript("arguments[0].click();", element);
     }
+  }
+
+  private async replaceInputValue(input: WebElement, value: string): Promise<void> {
+    await this.clickElement(input);
+    await input.sendKeys(Key.chord(Key.CONTROL, "a"));
+    await input.sendKeys(Key.DELETE);
+
+    await this.driver.wait(async () => {
+      const currentValue = await input.getAttribute("value");
+      return currentValue === "";
+    }, appConfig.timeoutMs, "Expected input to be cleared before typing");
+
+    await input.sendKeys(value);
+
+    await this.driver.wait(async () => {
+      const currentValue = await input.getAttribute("value");
+      return currentValue === value;
+    }, appConfig.timeoutMs, `Expected input value to be "${value}"`);
   }
 }
