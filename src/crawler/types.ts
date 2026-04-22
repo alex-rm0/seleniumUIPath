@@ -19,6 +19,7 @@ export interface ExtractedElement {
 }
 
 export interface CrawledPage {
+  key: string;
   name: string;
   url: string;
   extractedAt: string;
