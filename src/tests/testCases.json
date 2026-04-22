@@ -236,5 +236,21 @@
       "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
       "navigationFlow": "editPortoMarselhaLocation"
     }
+  },
+  {
+    "id": "TC018",
+    "title": "Criar, editar nome e eliminar mercado",
+    "processArea": "Markets",
+    "input": {
+      "username": "sandrodev",
+      "password": "Sandrodev-123",
+      "marketName": "QA Teste Mercado",
+      "marketRename": "QA Teste Mercado Renomeado"
+    },
+    "expected": {
+      "shouldPass": true,
+      "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
+      "navigationFlow": "createEditDeleteMarket"
+    }
   }
 ]

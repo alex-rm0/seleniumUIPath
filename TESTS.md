@@ -17,3 +17,4 @@
 - TC015 - Abertura de Localizacoes e validacao de que a tabela carrega Porto de Marselha.
 - TC016 - Refresh da tabela de Localizacoes e confirmacao de que Porto de Marselha continua visivel.
 - TC017 - Selecionar Porto de Marselha em Localizacoes, abrir a edicao e confirmar a tab de detalhe.
+- TC018 - Criar um novo mercado, editar o nome, eliminar o mercado e confirmar o regresso a pagina de login.

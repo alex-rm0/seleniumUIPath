@@ -1,6 +1,8 @@
 export interface TestCaseInput {
   username: string;
   password: string;
+  marketName?: string;
+  marketRename?: string;
 }
 
 export interface TestCaseExpected {
@@ -19,7 +21,8 @@ export interface TestCaseExpected {
     | "editWesternEuropeMarket"
     | "locationsTableLoads"
     | "refreshLocationsTable"
-    | "editPortoMarselhaLocation";
+    | "editPortoMarselhaLocation"
+    | "createEditDeleteMarket";
 }
 
 export interface TestCase {

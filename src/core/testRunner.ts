@@ -109,6 +109,30 @@ export async function runCase(driver: WebDriver, testCase: TestCase): Promise<Te
         await navigation.openLocations();
         await navigation.openPortoMarselhaEditTab();
       }
+
+      if (testCase.expected.navigationFlow === "createEditDeleteMarket") {
+        const marketName = testCase.input.marketName;
+        const marketRename = testCase.input.marketRename;
+
+        if (!marketName || !marketRename) {
+          throw new Error("TC createEditDeleteMarket requer marketName e marketRename no input");
+        }
+
+        await navigation.openSideMenu();
+        await navigation.openMarkets();
+        await navigation.createMarket(marketName);
+        await navigation.expectMarketVisible(marketName);
+        await navigation.editMarketName(marketName, marketRename);
+        await navigation.expectMarketVisible(marketRename);
+        await navigation.deleteMarket(marketRename);
+        await navigation.expectMarketNotVisible(marketRename);
+        await page.logout();
+
+        const returnedToLogin = await page.isLoginPageVisible();
+        if (!returnedToLogin) {
+          throw new Error("Esperava regressar à página de login após logout");
+        }
+      }
     } else {
       actualMessage = testCase.expected.expectedAlertType === "error"
         ? await page.getErrorMessage()

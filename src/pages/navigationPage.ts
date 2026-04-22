@@ -15,6 +15,11 @@ export class NavigationPage {
   private readonly marketInfoTitle = By.xpath("//*[normalize-space()='Informações do Mercado']");
   private readonly westernEuropeInput = By.xpath("//input[@value='Western Europe']");
   private readonly portoMarselhaRow = By.xpath("//tr[@role='row'][.//td[normalize-space()='Porto de Marselha']]");
+  private readonly newMarketButton = By.css("button i.pi.pi-plus");
+  private readonly deleteMarketButton = By.css("button i.pi.pi-trash");
+  private readonly marketNameInput = By.css("input.MuiInputBase-input[type='text']");
+  private readonly saveMarketButton = By.xpath("//button[contains(@class,'buttonClass') and contains(normalize-space(),'Guardar')]");
+  private readonly confirmDeleteButton = By.xpath("//button[contains(@class,'buttonClass') and (contains(normalize-space(),'Sim') or contains(normalize-space(),'Confirmar'))]");
 
   constructor(private readonly driver: WebDriver) {}
 
@@ -116,6 +121,85 @@ export class NavigationPage {
 
     await this.waitForSuccessAlert("Tab criado com sucesso");
     await this.driver.wait(until.urlContains("locationConfigCrud"), appConfig.timeoutMs);
+  }
+
+  public async createMarket(name: string): Promise<void> {
+    const newBtn = await this.findInteractableElement(this.newMarketButton);
+    await this.clickElement(newBtn);
+
+    await this.driver.wait(until.urlContains("marketConfigCrud"), appConfig.timeoutMs);
+    await this.findInteractableElement(this.marketInfoTitle);
+
+    const nameInput = await this.findInteractableElement(this.marketNameInput);
+    await nameInput.clear();
+    await nameInput.sendKeys(name);
+
+    const saveBtn = await this.findInteractableElement(this.saveMarketButton);
+    await this.clickElement(saveBtn);
+
+    await this.waitForSuccessAlert("sucesso");
+    await this.closeCurrentTab();
+  }
+
+  public async editMarketName(name: string, newName: string): Promise<void> {
+    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
+    const row = await this.findInteractableElement(rowLocator);
+    await this.clickElement(row);
+
+    const editIcon = await this.findInteractableElement(this.editButton);
+    await this.clickElement(editIcon);
+
+    await this.driver.wait(until.urlContains("marketConfigCrud"), appConfig.timeoutMs);
+    await this.findInteractableElement(this.marketInfoTitle);
+
+    const nameInput = await this.findInteractableElement(this.marketNameInput);
+    await this.driver.executeScript("arguments[0].value = '';", nameInput);
+    await nameInput.clear();
+    await nameInput.sendKeys(newName);
+
+    const saveBtn = await this.findInteractableElement(this.saveMarketButton);
+    await this.clickElement(saveBtn);
+
+    await this.waitForSuccessAlert("sucesso");
+    await this.closeCurrentTab();
+  }
+
+  public async deleteMarket(name: string): Promise<void> {
+    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
+    const row = await this.findInteractableElement(rowLocator);
+    await this.clickElement(row);
+
+    const deleteBtn = await this.findInteractableElement(this.deleteMarketButton);
+    await this.clickElement(deleteBtn);
+
+    try {
+      const confirmBtn = await this.driver.wait(
+        until.elementLocated(this.confirmDeleteButton),
+        3000
+      );
+      await this.driver.wait(until.elementIsVisible(confirmBtn), 3000);
+      await this.clickElement(confirmBtn);
+    } catch {
+      // sem diálogo de confirmação — o delete foi imediato
+    }
+
+    await this.waitForSuccessAlert("sucesso");
+  }
+
+  public async expectMarketVisible(name: string): Promise<void> {
+    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
+    await this.findInteractableElement(rowLocator);
+  }
+
+  public async expectMarketNotVisible(name: string): Promise<void> {
+    await this.driver.sleep(1000);
+    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
+    const rows = await this.driver.findElements(rowLocator);
+    for (const row of rows) {
+      if (await row.isDisplayed()) {
+        throw new Error(`Mercado "${name}" devia ter sido eliminado mas ainda está visível`);
+      }
+    }
   }
 
   public async closeCurrentTab(): Promise<void> {
