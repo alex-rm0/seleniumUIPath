@@ -4,6 +4,7 @@ export interface ExtractedElement {
   role: string | null;
   id: string | null;
   name: string | null;
+  label: string | null;
   placeholder: string | null;
   ariaLabel: string | null;
   ariaDescribedBy: string | null;

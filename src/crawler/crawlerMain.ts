@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { createDriver } from "../core/driverFactory";
 import { ensureDirectoryExists } from "../core/fileSystem";
+import { timestampForFileName } from "../core/fileSystem";
 import { crawlPortal } from "./pageCrawler";
 import { ElementMap } from "./types";
 import { appConfig } from "../config/appConfig";
@@ -23,14 +24,24 @@ async function run(): Promise<void> {
     };
 
     const folder = ensureDirectoryExists("reports");
-    const outputPath = path.join(folder, "element-map.json");
-    fs.writeFileSync(outputPath, JSON.stringify(elementMap, null, 2), "utf8");
+    const json = JSON.stringify(elementMap, null, 2);
+
+    // Timestamped file — one per run, never overwritten
+    const timestampedPath = path.join(folder, `element-map-${timestampForFileName()}.json`);
+    fs.writeFileSync(timestampedPath, json, "utf8");
+
+    // Latest file — always reflects the most recent run
+    const latestPath = path.join(folder, "element-map-latest.json");
+    fs.writeFileSync(latestPath, json, "utf8");
+
+    const totalElements = pages.reduce((sum, p) => sum + p.elements.length, 0);
 
     console.log("");
     console.log("=== Crawl complete ===");
-    console.log(`Pages crawled : ${pages.length}`);
-    console.log(`Total elements: ${pages.reduce((sum, p) => sum + p.elements.length, 0)}`);
-    console.log(`Output        : ${outputPath}`);
+    console.log(`Pages crawled  : ${pages.length}`);
+    console.log(`Total elements : ${totalElements}`);
+    console.log(`Timestamped    : ${timestampedPath}`);
+    console.log(`Latest         : ${latestPath}`);
     console.log("");
 
     for (const page of pages) {

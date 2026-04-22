@@ -2,7 +2,6 @@ import { WebDriver } from "selenium-webdriver";
 import { ExtractedElement } from "./types";
 
 export async function extractElements(driver: WebDriver): Promise<ExtractedElement[]> {
-  // Diagnostic: verify element presence
   const diag = await driver.executeScript<{ total: number; inputs: number; buttons: number } | null>(
     "return { total: document.querySelectorAll('*').length, inputs: document.querySelectorAll('input').length, buttons: document.querySelectorAll('button').length };"
   );
@@ -14,7 +13,6 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
 
   console.log(`  [debug] DOM: ${diag.total} total, ${diag.inputs} inputs, ${diag.buttons} buttons`);
 
-  // Extraction — selectors hardcoded in script, JSON string returned for safe transfer
   const raw = await driver.executeScript<string | null>(`
     var results = [];
     var seen = {};
@@ -29,8 +27,7 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
         if (seen[key]) continue;
         seen[key] = 1;
 
-        var tag = el.tagName.toLowerCase();
-
+        var tag  = el.tagName.toLowerCase();
         var id   = el.getAttribute('id');
         var type = el.getAttribute('type');
         var role = el.getAttribute('role');
@@ -41,23 +38,79 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
         var adb  = el.getAttribute('aria-describedby');
         var href = el.getAttribute('href');
 
+        // Detect React-generated dynamic IDs (e.g. ":r0:", ":r1:")
+        var isDynId = id && /^:[a-zA-Z0-9]+:$/.test(id);
+
+        // Resolve associated label text
+        var labelText = null;
+        try {
+          if (id) {
+            var lel = document.querySelector('label[for="' + id + '"]');
+            if (lel) labelText = lel.textContent.trim().substring(0, 100);
+          }
+          if (!labelText) {
+            var alby = el.getAttribute('aria-labelledby');
+            if (alby) {
+              var lref = document.getElementById(alby);
+              if (lref) labelText = lref.textContent.trim().substring(0, 100);
+            }
+          }
+          if (!labelText) {
+            // Look for a wrapping <label> ancestor
+            var ancestor = el.parentNode;
+            var depth = 0;
+            while (ancestor && depth < 4) {
+              if (ancestor.tagName === 'LABEL') {
+                labelText = ancestor.textContent.trim().substring(0, 100);
+                break;
+              }
+              ancestor = ancestor.parentNode;
+              depth++;
+            }
+          }
+        } catch(e) {}
+
         var text = null;
         try { text = el.textContent ? el.textContent.trim().substring(0, 100) : null; } catch(e) {}
+        if (text === '') text = null;
 
         var val = null;
-        try { if (el.value !== undefined) val = String(el.value).substring(0, 80); } catch(e) {}
+        try { if (el.value !== undefined && el.value !== '') val = String(el.value).substring(0, 80); } catch(e) {}
+
+        // Stable CSS selector — skip dynamic IDs, prefer stable attributes
+        var stableCls = [];
+        try {
+          if (el.classList) {
+            for (var c = 0; c < el.classList.length; c++) {
+              var cn = el.classList[c];
+              if (cn.indexOf('css-') !== 0 && cn.indexOf('MuiBox') !== 0 && cn.indexOf('MuiGrid') !== 0 && cn.indexOf('Mui') !== 0) {
+                stableCls.push(cn);
+              }
+            }
+          }
+        } catch(e) {}
 
         var css = tag;
-        if (id)   css = '[id="' + id + '"]';
-        else if (tid)  css = '[data-testid="' + tid + '"]';
-        else if (al)   css = tag + '[aria-label="' + al + '"]';
-        else if (type) css = tag + '[type="' + type + '"]';
-        else if (role) css = tag + '[role="' + role + '"]';
+        if (id && !isDynId)  css = '[id="' + id + '"]';
+        else if (tid)        css = '[data-testid="' + tid + '"]';
+        else if (al)         css = tag + '[aria-label="' + al + '"]';
+        else if (ph)         css = tag + '[placeholder="' + ph + '"]';
+        else if (type && type !== 'button' && type !== 'submit')
+                             css = tag + '[type="' + type + '"]';
+        else if (stableCls.length > 0)
+                             css = tag + '.' + stableCls.slice(0, 3).join('.');
+        else if (role)       css = tag + '[role="' + role + '"]';
 
+        // XPath — skip dynamic IDs
         var xpth = '';
         try {
-          if (id) { xpth = '//*[@id="' + id + '"]'; }
-          else {
+          if (id && !isDynId) {
+            xpth = '//*[@id="' + id + '"]';
+          } else if (al) {
+            xpth = '//' + tag + '[@aria-label="' + al + '"]';
+          } else if (text && tag !== 'input' && tag !== 'select' && tag !== 'textarea') {
+            xpth = '//' + tag + '[normalize-space()="' + text.replace(/"/g, "'") + '"]';
+          } else {
             var parts = [], node = el;
             while (node && node.nodeType === 1) {
               var idx = 0, sib = node.previousSibling;
@@ -71,20 +124,21 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
         } catch(e) {}
 
         var cls = [];
-        try { if (el.classList) for (var c = 0; c < el.classList.length; c++) cls.push(el.classList[c]); } catch(e) {}
+        try { if (el.classList) for (var ci = 0; ci < el.classList.length; ci++) cls.push(el.classList[ci]); } catch(e) {}
 
         results.push({
           tag: tag,
-          type: type,
-          role: role,
-          id: id || null,
+          type: type || null,
+          role: role || null,
+          id: (id && !isDynId) ? id : null,
           name: name || null,
+          lbl: labelText || null,
           ph: ph || null,
           al: al || null,
           adb: adb || null,
           tid: tid || null,
           text: text || null,
-          val: val,
+          val: val || null,
           href: href || null,
           cls: cls,
           css: css,
@@ -99,7 +153,7 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
   `);
 
   if (!raw) {
-    console.warn("  [warn] extraction script returned null — check browser console for errors");
+    console.warn("  [warn] extraction script returned null");
     return [];
   }
 
@@ -114,13 +168,22 @@ export async function extractElements(driver: WebDriver): Promise<ExtractedEleme
   if (!Array.isArray(parsed)) return [];
 
   return parsed
-    .filter((el) => el.w > 0 && el.h > 0)
+    .filter((el) => {
+      // Must have visible dimensions
+      if (el.w <= 0 || el.h <= 0) return false;
+      // Must have at least one identifying attribute useful for tests
+      const hasIdentity = el.lbl || el.al || el.ph || el.tid || el.id ||
+        (el.text && el.text.trim().length > 0) || el.href ||
+        (el.type && el.type !== "button" && el.type !== "submit");
+      return hasIdentity;
+    })
     .map((el) => ({
       tag: el.tag,
       type: el.type,
       role: el.role,
       id: el.id,
       name: el.name,
+      label: el.lbl,
       placeholder: el.ph,
       ariaLabel: el.al,
       ariaDescribedBy: el.adb,
@@ -141,6 +204,7 @@ interface RawElement {
   role: string | null;
   id: string | null;
   name: string | null;
+  lbl: string | null;
   ph: string | null;
   al: string | null;
   adb: string | null;

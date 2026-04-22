@@ -1,0 +1,189 @@
+{
+  "generatedAt": "2026-04-21T16:59:29.409Z",
+  "baseUrl": "https://dev.nexus.shipperform.devlop.systems/#/login",
+  "pages": [
+    {
+      "name": "Login",
+      "url": "https://dev.nexus.shipperform.devlop.systems/#/login",
+      "extractedAt": "2026-04-21T16:59:20.782Z",
+      "elements": [
+        {
+          "tag": "input",
+          "type": "text",
+          "role": null,
+          "id": ":r0:",
+          "name": null,
+          "placeholder": null,
+          "ariaLabel": null,
+          "ariaDescribedBy": null,
+          "testId": null,
+          "text": null,
+          "value": "",
+          "href": null,
+          "classes": [
+            "MuiInputBase-input",
+            "MuiOutlinedInput-input",
+            "MuiInputBase-inputSizeSmall",
+            "MuiInputBase-inputAdornedStart",
+            "css-1m7embp"
+          ],
+          "cssSelector": "[id=\":r0:\"]",
+          "xpath": "//*[@id=\":r0:\"]",
+          "interactable": true
+        },
+        {
+          "tag": "input",
+          "type": "password",
+          "role": null,
+          "id": ":r1:",
+          "name": null,
+          "placeholder": null,
+          "ariaLabel": null,
+          "ariaDescribedBy": null,
+          "testId": null,
+          "text": null,
+          "value": "",
+          "href": null,
+          "classes": [
+            "MuiInputBase-input",
+            "MuiOutlinedInput-input",
+            "MuiInputBase-inputSizeSmall",
+            "MuiInputBase-inputAdornedStart",
+            "MuiInputBase-inputAdornedEnd",
+            "css-1xqp9nb"
+          ],
+          "cssSelector": "[id=\":r1:\"]",
+          "xpath": "//*[@id=\":r1:\"]",
+          "interactable": true
+        },
+        {
+          "tag": "button",
+          "type": "button",
+          "role": null,
+          "id": null,
+          "name": null,
+          "placeholder": null,
+          "ariaLabel": "toggle password visibility",
+          "ariaDescribedBy": null,
+          "testId": null,
+          "text": null,
+          "value": "",
+          "href": null,
+          "classes": [
+            "MuiButtonBase-root",
+            "MuiIconButton-root",
+            "MuiIconButton-edgeEnd",
+            "MuiIconButton-sizeMedium",
+            "css-1udrn7b"
+          ],
+          "cssSelector": "button[aria-label=\"toggle password visibility\"]",
+          "xpath": "/html/body/div/div[2]/div[2]/div/div[2]/div/div[2]/div/div/button",
+          "interactable": true
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "role": null,
+          "id": null,
+          "name": null,
+          "placeholder": null,
+          "ariaLabel": null,
+          "ariaDescribedBy": null,
+          "testId": null,
+          "text": "Iniciar Sessão",
+          "value": "",
+          "href": null,
+          "classes": [
+            "buttonClass",
+            "buttonClassHover"
+          ],
+          "cssSelector": "button",
+          "xpath": "/html/body/div/div[2]/div[2]/div/div[2]/div/div[3]/div/button",
+          "interactable": true
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "role": null,
+          "id": null,
+          "name": null,
+          "placeholder": null,
+          "ariaLabel": null,
+          "ariaDescribedBy": null,
+          "testId": null,
+          "text": null,
+          "value": "",
+          "href": null,
+          "classes": [
+            "buttonClass",
+            "buttonClassHover"
+          ],
+          "cssSelector": "button",
+          "xpath": "/html/body/div/div[2]/div[3]/div/div/div/span/button",
+          "interactable": true
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "role": null,
+          "id": null,
+          "name": null,
+          "placeholder": null,
+          "ariaLabel": null,
+          "ariaDescribedBy": null,
+          "testId": null,
+          "text": null,
+          "value": "",
+          "href": null,
+          "classes": [
+            "buttonClass",
+            "buttonClassHover"
+          ],
+          "cssSelector": "button",
+          "xpath": "/html/body/div/div[2]/div[3]/div/div[2]/div/span/button",
+          "interactable": true
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "role": null,
+          "id": null,
+          "name": null,
+          "placeholder": null,
+          "ariaLabel": null,
+          "ariaDescribedBy": null,
+          "testId": null,
+          "text": null,
+          "value": "",
+          "href": null,
+          "classes": [
+            "buttonClass",
+            "buttonClassHover"
+          ],
+          "cssSelector": "button",
+          "xpath": "/html/body/div/div[2]/div[3]/div/div[3]/div/span/button",
+          "interactable": true
+        },
+        {
+          "tag": "button",
+          "type": null,
+          "role": null,
+          "id": null,
+          "name": null,
+          "placeholder": null,
+          "ariaLabel": null,
+          "ariaDescribedBy": null,
+          "testId": null,
+          "text": null,
+          "value": "",
+          "href": null,
+          "classes": [
+            "buttonClass",
+            "buttonClassHover"
+          ],
+          "cssSelector": "button",
+          "xpath": "/html/body/div/div[2]/div[3]/div/div[4]/div/span/button",
+          "interactable": true
+        }
+      ]
+    },
