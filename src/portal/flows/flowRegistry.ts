@@ -222,6 +222,72 @@ export async function executeFlow(driver: WebDriver, testCase: TestCase): Promis
       if (!carrierReturnedToLogin) throw new Error("Esperava regressar ao login do carrier após logout");
     }
 
+    // ── TC022: shipper cria tender → carrier faz bid ────────────────────────
+    if (flow === "bidSpotTenderAsCarrier") {
+      const tenderName = testCase.input.tenderNamePrefix
+        ? `${testCase.input.tenderNamePrefix} ${Date.now()}`
+        : (testCase.input.tenderName ?? `Tender Auto ${Date.now()}`);
+
+      const responseDeadline  = testCase.input.responseDeadline  ?? "2026-05-20";
+      const shipmentStartDate = testCase.input.shipmentStartDate ?? "2026-05-25";
+      const shipmentEndDate   = testCase.input.shipmentEndDate   ?? "2026-05-30";
+      const pickupAddress     = testCase.input.pickupAddress     ?? "Porto";
+      const deliveryAddress   = testCase.input.deliveryAddress   ?? "Rotterdam";
+      const deliverTo         = testCase.input.deliverTo         ?? "QA Carrier";
+
+      // Parte 1 — shipper: cria tender e valida na tabela
+      await navigation.createSpotTender(
+        tenderName,
+        responseDeadline,
+        shipmentStartDate,
+        shipmentEndDate,
+        pickupAddress,
+        deliveryAddress,
+        deliverTo,
+        "100",
+        "1",
+        true
+      );
+      await navigation.expectSpotTenderVisible(tenderName);
+      await page.logout();
+      const shipperReturned = await page.isLoginPageVisible();
+      if (!shipperReturned) throw new Error("Esperava regressar à página de login do shipper após logout");
+
+      // Parte 2 — carrier: valida tender e submete bid
+      const carrierUrl      = testCase.input.carrierUrl;
+      const carrierUsername = testCase.input.carrierUsername;
+      const carrierPassword = testCase.input.carrierPassword;
+
+      if (!carrierUrl || !carrierUsername || !carrierPassword) {
+        throw new Error(
+          `TC "${testCase.id}" usa o flow "bidSpotTenderAsCarrier" mas faltam campos: ` +
+          [
+            !carrierUrl      ? "carrierUrl"      : null,
+            !carrierUsername ? "carrierUsername" : null,
+            !carrierPassword ? "carrierPassword" : null,
+          ].filter(Boolean).join(", ")
+        );
+      }
+
+      const bidPrice = testCase.input.bidPrice ?? "150";
+      const bidLoads = testCase.input.bidLoads ?? "1";
+      const bidDays  = testCase.input.bidDays  ?? "5";
+
+      const carrier = new CarrierPage(driver);
+      await carrier.openAndLogin(carrierUrl, carrierUsername, carrierPassword);
+      await carrier.openSideMenu();
+      await carrier.openTendersSectionDropdown();
+      await carrier.navigateToSpotTenders();
+      await carrier.expectSpotTenderVisible(tenderName);
+      await carrier.rightClickAndViewTender(tenderName);
+      await carrier.clickOfertaButton();
+      await carrier.fillBidTable(bidPrice, bidLoads, bidDays);
+      await carrier.submitBid();
+      await carrier.logout();
+      const carrierReturned = await carrier.isLoginPageVisible();
+      if (!carrierReturned) throw new Error("Esperava regressar ao login do carrier após logout");
+    }
+
   } else {
     actualMessage = testCase.expected.expectedAlertType === "error"
       ? await page.getErrorMessage()

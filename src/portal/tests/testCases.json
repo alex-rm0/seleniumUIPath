@@ -313,5 +313,32 @@
       "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
       "navigationFlow": "createSpotTenderOnly"
     }
+  },
+  {
+    "id": "TC022",
+    "title": "Carrier submete bid num spot tender criado pelo shipper",
+    "processArea": "Tenders",
+    "input": {
+      "username": "sandrodev",
+      "password": "Sandrodev-123",
+      "tenderNamePrefix": "QA Spot Tender",
+      "responseDeadline": "2026-05-20",
+      "shipmentStartDate": "2026-05-25",
+      "shipmentEndDate": "2026-05-30",
+      "pickupAddress": "Porto",
+      "deliveryAddress": "Rotterdam",
+      "deliverTo": "QA Carrier",
+      "carrierUrl": "https://dev.nexus.shipperform.devlop.systems/#/carrier/login",
+      "carrierUsername": "Air_North_devloptest",
+      "carrierPassword": "Air_North_devloptest-123",
+      "bidPrice": "150",
+      "bidLoads": "1",
+      "bidDays": "5"
+    },
+    "expected": {
+      "shouldPass": true,
+      "expectedMessage": "Sucesso\nSucesso, está autenticado!",
+      "navigationFlow": "bidSpotTenderAsCarrier"
+    }
   }
 ]
