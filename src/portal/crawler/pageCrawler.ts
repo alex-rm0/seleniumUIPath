@@ -21,7 +21,10 @@ export type PageKey =
   | "tenders-create"
   | "tenders-create-expanded"
   | "tenders-carriers"
-  | "tenders-non-spot";
+  | "tenders-non-spot"
+  | "carrier-login"
+  | "carrier-sidemenu"
+  | "carrier-spot-tenders";
 
 export const PAGE_KEYS: PageKey[] = [
   "login",
@@ -38,6 +41,9 @@ export const PAGE_KEYS: PageKey[] = [
   "tenders-create-expanded",
   "tenders-carriers",
   "tenders-non-spot",
+  "carrier-login",
+  "carrier-sidemenu",
+  "carrier-spot-tenders",
 ];
 
 export const PAGE_LABELS: Record<PageKey, string> = {
@@ -55,6 +61,9 @@ export const PAGE_LABELS: Record<PageKey, string> = {
   "tenders-create-expanded": "Create Tender - Expanded",
   "tenders-carriers": "Create Tender - Carriers",
   "tenders-non-spot": "Non-Spot Tenders",
+  "carrier-login": "Carrier - Login",
+  "carrier-sidemenu": "Carrier - Side Menu",
+  "carrier-spot-tenders": "Carrier - Spot Tenders",
 };
 
 const TIMEOUT = portalConfig.timeoutMs;
@@ -162,6 +171,37 @@ export async function crawlPages(
       await openTendersSection(driver);
       await navigateToNonSpotTenders(driver);
       await addSnapshot(results, await snapshot(driver, "tenders-non-spot", "detailed"));
+    }
+  }
+
+  const needsCarrier =
+    requested.has("carrier-login") ||
+    requested.has("carrier-sidemenu") ||
+    requested.has("carrier-spot-tenders");
+
+  if (needsCarrier) {
+    const carrierLoginUrl = "https://dev.nexus.shipperform.devlop.systems/#/carrier/login";
+    await driver.get(carrierLoginUrl);
+    await driver.wait(until.elementLocated(By.css('input[type="text"]')), TIMEOUT);
+
+    if (requested.has("carrier-login")) {
+      await addSnapshot(results, await snapshot(driver, "carrier-login"));
+    }
+
+    console.log("  [crawl] logging in to carrier portal...");
+    await loginCarrier(driver);
+
+    await driver.sleep(1000);
+    if (requested.has("carrier-sidemenu")) {
+      await openSideMenu(driver);
+      await addSnapshot(results, await snapshot(driver, "carrier-sidemenu", "detailed"));
+    }
+
+    if (requested.has("carrier-spot-tenders")) {
+      await openSideMenu(driver);
+      await openCarrierTendersSection(driver);
+      await navigateToCarrierSpotTenders(driver);
+      await addSnapshot(results, await snapshot(driver, "carrier-spot-tenders", "detailed"));
     }
   }
 
@@ -967,5 +1007,82 @@ async function waitForSuccessAlert(driver: WebDriver, message: string): Promise<
     }
     return false;
   }, TIMEOUT, `Expected success alert: "${message}"`);
+}
+
+async function loginCarrier(driver: WebDriver): Promise<void> {
+  const username = await driver.findElement(By.css('input[type="text"]'));
+  const password = await driver.findElement(By.css('input[type="password"]'));
+  const submit   = await driver.findElement(By.css("button.buttonClass.buttonClassHover"));
+  await username.clear();
+  await username.sendKeys("Air_North_devloptest");
+  await password.clear();
+  await password.sendKeys("Air_North_devloptest-123");
+  await submit.click();
+  await driver.wait(
+    until.elementLocated(By.css("div.MuiAlert-root.MuiAlert-colorSuccess.MuiAlert-filledSuccess")),
+    TIMEOUT
+  );
+  console.log("  [crawl] carrier login successful");
+}
+
+async function openCarrierTendersSection(driver: WebDriver): Promise<void> {
+  const section = await findMenuItemWithScroll(driver, [
+    "Tenders", "Concursos", "Cotações", "Cotaciones", "Licitaciones",
+  ]);
+
+  const submenuLocator = By.xpath(
+    "//*[normalize-space()='Spot Tenders' or normalize-space()='Non-Spot Tenders'" +
+    " or normalize-space()='Concursos Diretos' or normalize-space()='Concursos Faseados'" +
+    " or normalize-space()='Licitaciones Inmediatas' or normalize-space()='Licitaciones No Inmediatas']"
+  );
+
+  const submenuVisible = await driver.findElements(submenuLocator).then((els) =>
+    Promise.all(els.map((el) => el.isDisplayed())).then((results) => results.some(Boolean))
+  );
+
+  if (!submenuVisible) {
+    await driver.executeScript("arguments[0].scrollIntoView({block:'center'});", section);
+    await clickElement(driver, section);
+    await driver.wait(async () => {
+      const els = await driver.findElements(submenuLocator);
+      return Promise.all(els.map((el) => el.isDisplayed())).then((results) => results.some(Boolean));
+    }, TIMEOUT, "Carrier Tenders section did not expand");
+  }
+}
+
+async function navigateToCarrierSpotTenders(driver: WebDriver): Promise<void> {
+  const btn = await driver.wait(
+    until.elementLocated(
+      By.xpath(
+        "//div[@aria-label='Spot Tenders' or @aria-label='Concursos Diretos'" +
+        " or @aria-label='Concursos Inmediatos' or @aria-label='Licitaciones Inmediatas']"
+      )
+    ),
+    TIMEOUT
+  );
+  await driver.wait(until.elementIsVisible(btn), TIMEOUT);
+  await clickElement(driver, btn);
+  try {
+    await waitForSuccessAlert(driver, "Tab created successfully");
+  } catch {
+    try {
+      await waitForSuccessAlert(driver, "Tab criado com sucesso");
+    } catch {
+      // toast opcional
+    }
+  }
+  await driver.wait(async () => {
+    const currentUrl = await driver.getCurrentUrl();
+    if (!currentUrl.endsWith("#/carrier") && !currentUrl.endsWith("#/carrier/home")) return true;
+    const actions = await driver.findElements(
+      By.xpath(
+        "//*[normalize-space()='Refresh table' or normalize-space()='Edit' or normalize-space()='Default'" +
+        " or normalize-space()='Views' or normalize-space()='Filters']"
+      )
+    );
+    const visible = await Promise.all(actions.map((el) => el.isDisplayed().catch(() => false)));
+    return visible.some(Boolean);
+  }, TIMEOUT, "Expected carrier Spot Tenders page to load");
+  await driver.sleep(500);
 }
 

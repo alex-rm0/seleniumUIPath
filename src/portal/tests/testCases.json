@@ -292,7 +292,7 @@
   },
   {
     "id": "TC021",
-    "title": "Criar spot tender e validar na tabela (sem editar/eliminar)",
+    "title": "Criar spot tender e validar na tabela (shipper + carrier)",
     "processArea": "Tenders",
     "input": {
       "username": "sandrodev",
@@ -303,7 +303,10 @@
       "shipmentEndDate": "2026-05-30",
       "pickupAddress": "Porto",
       "deliveryAddress": "Rotterdam",
-      "deliverTo": "QA Carrier"
+      "deliverTo": "QA Carrier",
+      "carrierUrl": "https://dev.nexus.shipperform.devlop.systems/#/carrier/login",
+      "carrierUsername": "Air_North_devloptest",
+      "carrierPassword": "Air_North_devloptest-123"
     },
     "expected": {
       "shouldPass": true,

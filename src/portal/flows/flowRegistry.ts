@@ -2,6 +2,7 @@ import { WebDriver } from "selenium-webdriver";
 import { TestCase } from "../../engine/types/testCase";
 import { LoginPage } from "../pages/loginPage";
 import { NavigationPage } from "../pages/navigationPage";
+import { CarrierPage } from "../pages/carrierPage";
 
 /**
  * Executa o fluxo completo de um caso de teste: login, navegação e logout.
@@ -193,6 +194,23 @@ export async function executeFlow(driver: WebDriver, testCase: TestCase): Promis
       await page.logout();
       const returnedToLogin = await page.isLoginPageVisible();
       if (!returnedToLogin) throw new Error("Esperava regressar à página de login após logout");
+
+      // Parte 2 — validar tender no portal de carrier
+      const carrierUrl      = testCase.input.carrierUrl      ?? "https://dev.nexus.shipperform.devlop.systems/#/carrier/login";
+      const carrierUsername = testCase.input.carrierUsername ?? "";
+      const carrierPassword = testCase.input.carrierPassword ?? "";
+
+      if (carrierUsername) {
+        const carrier = new CarrierPage(driver);
+        await carrier.openAndLogin(carrierUrl, carrierUsername, carrierPassword);
+        await carrier.openSideMenu();
+        await carrier.openTendersSectionDropdown();
+        await carrier.navigateToSpotTenders();
+        await carrier.expectSpotTenderVisible(tenderName);
+        await carrier.logout();
+        const carrierReturnedToLogin = await carrier.isLoginPageVisible();
+        if (!carrierReturnedToLogin) throw new Error("Esperava regressar ao login do carrier após logout");
+      }
     }
 
   } else {
