@@ -155,6 +155,10 @@ export async function executeFlow(driver: WebDriver, testCase: TestCase): Promis
         deliverTo
       );
       await navigation.expectSpotTenderVisible(tenderName);
+      await navigation.editSpotTender(tenderName);
+      await navigation.expectSpotTenderVisible(tenderName);
+      await navigation.deleteSpotTender(tenderName);
+      await navigation.expectSpotTenderNotVisible(tenderName);
       await page.logout();
       const returnedToLogin = await page.isLoginPageVisible();
       if (!returnedToLogin) throw new Error("Esperava regressar Ã  pÃ¡gina de login apÃ³s logout");

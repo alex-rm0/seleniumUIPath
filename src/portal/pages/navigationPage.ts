@@ -302,6 +302,81 @@ export class NavigationPage {
     await this.findInteractableElement(By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`));
   }
 
+  public async editSpotTender(name: string): Promise<void> {
+    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
+    const row = await this.findInteractableElement(rowLocator);
+    await this.clickElement(row);
+
+    const editBtn = await this.findInteractableElement(this.editButton);
+    await this.clickElement(editBtn);
+
+    // Aguarda que o formulário de edição mostre pelo menos um input interactável
+    await this.driver.wait(async () => {
+      const els = await this.driver.findElements(
+        By.css("input:not([disabled]):not([readonly]), textarea:not([aria-hidden='true'])")
+      );
+      for (const el of els) {
+        if (await el.isDisplayed().catch(() => false)) return true;
+      }
+      return false;
+    }, portalConfig.timeoutMs, "Esperava que o formulário de edição do tender abrisse");
+
+    // Navega pelo wizard até chegar ao passo de mensagem (se necessário)
+    for (let step = 0; step < 5; step++) {
+      const textareas = await this.driver.findElements(this.tenderMessageTextarea);
+      let found = false;
+      for (const el of textareas) {
+        if (await el.isDisplayed().catch(() => false)) { found = true; break; }
+      }
+      if (found) break;
+      await this.clickTenderNext();
+    }
+
+    // Edita a mensagem com sendKeys (compatível com React)
+    const textarea = await this.findInteractableElement(this.tenderMessageTextarea);
+    await this.clickElement(textarea);
+    await textarea.sendKeys(Key.chord(Key.CONTROL, "a"));
+    await textarea.sendKeys(Key.DELETE);
+    await textarea.sendKeys(`Mensagem editada - ${name}`);
+
+    // Guarda (botão "Enviar" / "Send" no topo)
+    const saveBtn = await this.findInteractableElement(this.tenderEnviarButton);
+    await this.clickElement(saveBtn);
+    await this.waitAfterSave();
+    await this.openSpotTendersPageDirectly();
+  }
+
+  public async deleteSpotTender(name: string): Promise<void> {
+    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
+    const row = await this.findInteractableElement(rowLocator);
+    await this.clickElement(row);
+
+    const deleteBtn = await this.findInteractableElement(this.deleteMarketButton);
+    await this.clickElement(deleteBtn);
+
+    // Confirma o diálogo de eliminação (se aparecer)
+    try {
+      const confirmBtn = await this.driver.wait(until.elementLocated(this.confirmDeleteButton), 5000);
+      await this.driver.wait(until.elementIsVisible(confirmBtn), 5000);
+      await this.clickElement(confirmBtn);
+    } catch {
+      // sem diálogo de confirmação — delete imediato
+    }
+
+    await this.waitAfterSave();
+  }
+
+  public async expectSpotTenderNotVisible(name: string): Promise<void> {
+    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
+    await this.driver.wait(async () => {
+      const rows = await this.driver.findElements(rowLocator);
+      for (const row of rows) {
+        if (await row.isDisplayed().catch(() => false)) return false;
+      }
+      return true;
+    }, portalConfig.timeoutMs, `Esperava que o tender "${name}" já não estivesse visível na tabela`);
+  }
+
   public async navigateToSpotTenderCarriersStep(
     name: string,
     responseDeadline: string,
