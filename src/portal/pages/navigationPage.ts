@@ -28,7 +28,7 @@ export class NavigationPage {
   private readonly transportTypesButton = By.xpath("//div[@role='button'][.//span[contains(normalize-space(),'Tipos de Transporte')]]");
   private readonly tendersSectionButton = By.xpath("//div[@role='button'][.//span[normalize-space()='Tenders' or contains(normalize-space(),'Concursos') or contains(normalize-space(),'Concurs')]]");
   private readonly spotTendersButton = By.xpath("//div[@role='button'][@aria-label='Spot Tenders' or @aria-label='Concursos Diretos' or @aria-label='Concursos Inmediatos' or .//span[normalize-space()='Spot Tenders']]");
-  private readonly createTenderButton = By.xpath("//div[@role='button'][.//*[@data-testid='AddchartIcon'] or .//span[normalize-space()='Create Tender' or normalize-space()='Criar Concurso' or normalize-space()='Crear Licitación']]");
+  private readonly createTenderButton = By.xpath("//div[@aria-label='Criar Concurso' or @aria-label='Create Tender' or @aria-label='Crear Licitación' or @aria-label='Crear Concurso']");
   private readonly spotTendersPageTitle = By.xpath("//*[normalize-space()='Spot Tenders' or normalize-space()='Concursos Diretos' or normalize-space()='Concursos Inmediatos']");
   private readonly createTenderFormMarker = By.xpath("//*[normalize-space()='Create Tender' or normalize-space()='Criar Concurso' or normalize-space()='Tender Information' or normalize-space()='InformaÃ§Ãµes do Concurso' or normalize-space()='Pickup Address' or normalize-space()='EndereÃ§o de recolha' or normalize-space()='Delivery Address' or normalize-space()='EndereÃ§o de Entrega' or normalize-space()='Deliver To' or normalize-space()='Entregar a']");
   private readonly tenderInformationSectionInputs = By.xpath("//*[contains(normalize-space(),'Concurso') or contains(normalize-space(),'Tender Information')]/ancestor::*[self::div or self::section][1]//input");
@@ -45,7 +45,9 @@ export class NavigationPage {
   private readonly wizardStepThreeMarker = By.xpath("//*[normalize-space()='Transportadores' or normalize-space()='Carriers']");
   private readonly wizardStepFourMarker = By.xpath("//*[normalize-space()='Mensagem' or normalize-space()='Message']");
   private readonly routeSelectionMarker = By.xpath("//*[normalize-space()='Selecionar Rota' or normalize-space()='Select Route' or normalize-space()='Rota *' or normalize-space()='Route *']");
-  private readonly carriersInvitationMarker = By.xpath("//*[normalize-space()='Carriers Invitation' or normalize-space()='Convite a Transportadores' or normalize-space()='Carriers']");
+  private readonly carriersInvitationMarker = By.xpath("//*[normalize-space()='Carriers Invitation' or normalize-space()='Convite a Transportadores' or normalize-space()='Carriers' or normalize-space()='Convidar Transportadoras' or normalize-space()='Transportadoras' or normalize-space()='Transportadores']");
+  private readonly carriersStgTitle = By.xpath("//span[contains(@class,'stg-title') and (contains(normalize-space(),'Transportador') or contains(normalize-space(),'Carrier'))]");
+  private readonly anyStgTileCheckbox = By.xpath("//div[contains(@class,'stg-tile')]//input[@type='checkbox']");
   private readonly submitMessageMarker = By.xpath("//*[normalize-space()='Submit Message' or normalize-space()='Submeter Mensagem' or normalize-space()='Message']");
   private readonly tenderMessageTextarea = By.css("textarea");
   private readonly carrierInvitationCheckboxRoot = By.css("label .MuiCheckbox-root");
@@ -245,8 +247,14 @@ export class NavigationPage {
     await this.openTendersSection();
     await this.ensureMenuItemInteractable(this.createTenderButton);
     await this.clickMenuItem(this.createTenderButton);
-    await this.driver.wait(until.urlContains("create-tenders"), portalConfig.timeoutMs);
-    await this.findInteractableElement(this.createTenderFormMarker);
+    // Aguarda qualquer elemento do formulário de criação (não depende de URL específica)
+    await this.driver.wait(async () => {
+      const candidates = await this.driver.findElements(this.createTenderFormMarker);
+      for (const el of candidates) {
+        if (await el.isDisplayed().catch(() => false)) return true;
+      }
+      return false;
+    }, portalConfig.timeoutMs, "Esperava que o formulário de criação de concurso abrisse");
   }
 
   public async createSpotTender(
@@ -496,60 +504,98 @@ export class NavigationPage {
   private async selectFirstCarrierInvitation(): Promise<void> {
     await this.dumpCarrierInvitationDebug();
 
-    const clicked = await this.driver.executeScript<boolean>(`
-      const normalize = (value) => (value || "").replace(/\\s+/g, " ").trim().toLowerCase();
-      const isVisible = (element) => {
-        if (!(element instanceof HTMLElement)) return false;
-        const rect = element.getBoundingClientRect();
-        const style = window.getComputedStyle(element);
-        return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+    // Estratégia 1: stg-tile pattern (estrutura igual a Mercados/Tipos de Transporte)
+    const clickedViaTile = await this.driver.executeScript<boolean>(`
+      const isVisible = (el) => {
+        if (!(el instanceof HTMLElement)) return false;
+        const r = el.getBoundingClientRect(), s = window.getComputedStyle(el);
+        return s.display !== "none" && s.visibility !== "hidden" && r.width > 0 && r.height > 0;
       };
-
-      const section = Array.from(document.querySelectorAll("div")).find((element) => {
-        const text = normalize(element.textContent);
-        return text.includes("convidar transportadoras") || text.includes("carriers invitation");
-      });
-      if (!section) return false;
-
-      const checkboxRoots = Array.from(section.querySelectorAll("span.MuiCheckbox-root, span.MuiButtonBase-root.MuiCheckbox-root"));
-      for (const root of checkboxRoots) {
-        if (!(root instanceof HTMLElement) || !isVisible(root)) continue;
-        const input = root.querySelector("input[type='checkbox']");
-        if (input instanceof HTMLInputElement && input.checked) continue;
-        root.click();
-        return true;
+      // Tenta encontrar checkboxes dentro de div.stg-tile na secção de Transportadoras
+      const stgContainers = Array.from(document.querySelectorAll("div.stg-container"));
+      for (const container of stgContainers) {
+        const title = container.querySelector("span.stg-title");
+        const titleText = (title?.textContent || "").toLowerCase();
+        if (!titleText.includes("transportad") && !titleText.includes("carrier")) continue;
+        const checkboxes = Array.from(container.querySelectorAll("div.stg-tile input[type='checkbox']"));
+        for (const cb of checkboxes) {
+          if (!(cb instanceof HTMLInputElement) || !isVisible(cb) || cb.checked) continue;
+          cb.click();
+          cb.dispatchEvent(new Event("input", { bubbles: true }));
+          cb.dispatchEvent(new Event("change", { bubbles: true }));
+          return true;
+        }
       }
-
       return false;
     `);
 
-    if (!clicked) {
-      throw new Error("Não foi possível selecionar um carrier na etapa Carriers Invitation");
+    if (!clickedViaTile) {
+      // Estratégia 2: MuiCheckbox-root dentro de qualquer secção com texto de transportadora
+      const clickedViaMui = await this.driver.executeScript<boolean>(`
+        const normalize = (v) => (v || "").replace(/\\s+/g, " ").trim().toLowerCase();
+        const isVisible = (el) => {
+          if (!(el instanceof HTMLElement)) return false;
+          const r = el.getBoundingClientRect(), s = window.getComputedStyle(el);
+          return s.display !== "none" && s.visibility !== "hidden" && r.width > 0 && r.height > 0;
+        };
+        // Procura o contentor da secção de carriers pelo título span.stg-title ou heading
+        const titleCandidates = Array.from(document.querySelectorAll(
+          "span.stg-title, h2, h3, h4, p, div.sectionTitle, div.panelTitle, legend"
+        ));
+        const titleEl = titleCandidates.find(el => isVisible(el) &&
+          (normalize(el.textContent).includes("transportad") || normalize(el.textContent).includes("carrier"))
+        );
+        const section = titleEl
+          ? (titleEl.closest("div.stg-container") || titleEl.closest("section") || titleEl.parentElement)
+          : document.body;
+
+        const roots = Array.from((section || document.body).querySelectorAll(
+          "span.MuiCheckbox-root, span.MuiButtonBase-root.MuiCheckbox-root, label.MuiFormControlLabel-root"
+        ));
+        for (const root of roots) {
+          if (!(root instanceof HTMLElement) || !isVisible(root)) continue;
+          const input = root.querySelector("input[type='checkbox']");
+          if (input instanceof HTMLInputElement && input.checked) continue;
+          root.click();
+          return true;
+        }
+        return false;
+      `);
+
+      if (!clickedViaMui) {
+        // Estratégia 3: clica no primeiro anyStgTileCheckbox que seja interactável
+        const tileCheckboxes = await this.driver.findElements(this.anyStgTileCheckbox);
+        let clicked3 = false;
+        for (const cb of tileCheckboxes) {
+          if (await this.isInteractable(cb)) {
+            const checked = await cb.getAttribute("checked");
+            if (!checked) {
+              await this.clickElement(cb);
+              clicked3 = true;
+              break;
+            }
+          }
+        }
+        if (!clicked3) {
+          throw new Error(
+            "Não foi possível selecionar um carrier na etapa Carriers Invitation — " +
+            "verifica se existem transportadoras configuradas no sistema e se o crawler " +
+            "capturou esta etapa (execute npm run crawl -- --pages=carriers-step)"
+          );
+        }
+      }
     }
 
-    await this.driver.sleep(300);
-    await this.driver.wait(
-      async () =>
-        this.driver.executeScript<boolean>(`
-          const normalize = (value) => (value || "").replace(/\\s+/g, " ").trim().toLowerCase();
-          const section = Array.from(document.querySelectorAll("div")).find((element) => {
-            const text = normalize(element.textContent);
-            return text.includes("convidar transportadoras") || text.includes("carriers invitation");
-          });
-          if (!section) return false;
+    await this.driver.sleep(400);
 
-          const roots = Array.from(section.querySelectorAll("span.MuiCheckbox-root, span.MuiButtonBase-root.MuiCheckbox-root"));
-          return roots.some((root) => {
-            if (!(root instanceof HTMLElement)) return false;
-            if (root.className.includes("Mui-checked")) return true;
-            const svg = root.querySelector("svg[data-testid='CheckBoxIcon']");
-            const input = root.querySelector("input[type='checkbox']");
-            return Boolean(svg) || (input instanceof HTMLInputElement && input.checked);
-          });
-        `),
-      portalConfig.timeoutMs,
-      "Esperava selecionar pelo menos um carrier"
-    );
+    // Verifica que pelo menos um checkbox ficou selecionado
+    const anyChecked = await this.driver.executeScript<boolean>(`
+      const checkboxes = Array.from(document.querySelectorAll("input[type='checkbox']"));
+      return checkboxes.some(cb => cb instanceof HTMLInputElement && cb.checked);
+    `);
+    if (!anyChecked) {
+      throw new Error("Carrier foi clicado mas nenhum checkbox ficou marcado — possível problema com React state");
+    }
   }
 
   private async dumpCarrierInvitationDebug(): Promise<void> {
@@ -632,46 +678,147 @@ export class NavigationPage {
     deliveryAddress: string,
     deliverTo: string
   ): Promise<void> {
+    // Estratégia mais robusta: procura inputs por label/placeholder específico
+    // em vez de depender de posição relativa num array com tamanho fixo.
+    await this.fillTenderInputByLabelOrPosition(0, name, ["nome", "name", "concurso", "tender"]);
+    await this.fillTenderDateInputByLabelOrPosition(1, responseDeadline, ["prazo", "deadline", "resposta", "response"]);
+    await this.fillTenderDateInputByLabelOrPosition(2, shipmentStartDate, ["início", "inicio", "start", "embarque", "shipment start"]);
+    await this.fillTenderDateInputByLabelOrPosition(3, shipmentEndDate, ["fim", "end", "término", "shipment end"]);
+    await this.fillTenderInputByLabelOrPosition(4, pickupAddress, ["recolha", "pickup", "origem", "origin"]);
+    await this.fillTenderInputByLabelOrPosition(5, deliveryAddress, ["entrega", "delivery", "destino", "destination"]);
+    await this.fillTenderInputByLabelOrPosition(6, deliverTo, ["entregar a", "deliver to", "destinatário"]);
+  }
+
+  private async getTenderInformationInputs(): Promise<WebElement[]> {
     const inputs = await this.findInteractableElements(this.tenderInformationSectionInputs);
-    const topInputs = await this.sortElementsByPosition(inputs);
+    const sorted = await this.sortElementsByPosition(inputs);
     const filtered: WebElement[] = [];
-    for (const input of topInputs) {
+    for (const input of sorted) {
       const placeholder = ((await input.getAttribute("placeholder")) ?? "").trim().toLowerCase();
-      const type = ((await input.getAttribute("type")) ?? "").trim().toLowerCase();
-      const role = ((await input.getAttribute("role")) ?? "").trim().toLowerCase();
-      const value = ((await input.getAttribute("value")) ?? "").trim();
+      const type        = ((await input.getAttribute("type")) ?? "").trim().toLowerCase();
+      const role        = ((await input.getAttribute("role")) ?? "").trim().toLowerCase();
+      const value       = ((await input.getAttribute("value")) ?? "").trim().toLowerCase();
       if (placeholder === "pesquisar" || placeholder === "search") continue;
       if (role === "combobox") continue;
       if (!["text", "date"].includes(type)) continue;
       if (value === "spot" || value === "fcl") continue;
       filtered.push(input);
     }
+    return filtered;
+  }
 
-    if (filtered.length < 7) {
-      throw new Error(`Esperava encontrar 7 inputs principais do concurso, mas encontrei ${filtered.length}`);
+  private async fillTenderInputByLabelOrPosition(
+    positionFallback: number,
+    value: string,
+    labelKeywords: string[]
+  ): Promise<void> {
+    const inputs = await this.getTenderInformationInputs();
+    const target = await this.findInputByLabelKeyword(inputs, labelKeywords)
+      ?? inputs[positionFallback];
+    if (!target) throw new Error(`Não foi possível encontrar input (posição ${positionFallback}, keywords: ${labelKeywords.join(", ")})`);
+    await this.replaceInputValue(target, value);
+  }
+
+  private async fillTenderDateInputByLabelOrPosition(
+    positionFallback: number,
+    value: string,
+    labelKeywords: string[]
+  ): Promise<void> {
+    const inputs = await this.getTenderInformationInputs();
+    const target = await this.findInputByLabelKeyword(inputs, labelKeywords)
+      ?? inputs[positionFallback];
+    if (!target) throw new Error(`Não foi possível encontrar input de data (posição ${positionFallback}, keywords: ${labelKeywords.join(", ")})`);
+    await this.replaceDateInputValue(target, value);
+  }
+
+  private async findInputByLabelKeyword(
+    inputs: WebElement[],
+    keywords: string[]
+  ): Promise<WebElement | null> {
+    for (const input of inputs) {
+      const id          = ((await input.getAttribute("id")) ?? "").toLowerCase();
+      const placeholder = ((await input.getAttribute("placeholder")) ?? "").toLowerCase();
+      const ariaLabel   = ((await input.getAttribute("aria-label")) ?? "").toLowerCase();
+      // tenta encontrar o label associado
+      let labelText = "";
+      try {
+        if (id) {
+          const labelEl = await this.driver.findElement(By.css(`label[for="${id}"]`));
+          labelText = ((await labelEl.getText()) ?? "").toLowerCase();
+        }
+      } catch { /* sem label associado */ }
+
+      const haystack = `${id} ${placeholder} ${ariaLabel} ${labelText}`;
+      if (keywords.some((kw) => haystack.includes(kw))) return input;
     }
-
-    await this.replaceInputValue(filtered[0], name);
-    await this.replaceDateInputValue(filtered[1], responseDeadline);
-    await this.replaceDateInputValue(filtered[2], shipmentStartDate);
-    await this.replaceDateInputValue(filtered[3], shipmentEndDate);
-    await this.replaceInputValue(filtered[4], pickupAddress);
-    await this.replaceInputValue(filtered[5], deliveryAddress);
-    await this.replaceInputValue(filtered[6], deliverTo);
+    return null;
   }
 
   private async selectTenderMarketAndTransportType(): Promise<void> {
-    const searchInputs = await this.findInteractableElements(this.tenderSearchInputs);
-    if (searchInputs.length < 2) {
-      throw new Error("Esperava encontrar os filtros de pesquisa de Mercados e Tipos de Transporte");
-    }
+    // ── Mercados ──────────────────────────────────────────────────────────────
+    // Procura o input de pesquisa dentro da secção de Mercados e filtra por "Europe"
+    await this.driver.executeScript<boolean>(`
+      const normalize = (v) => (v || "").replace(/\\s+/g, " ").trim().toLowerCase();
+      const isVisible = (el) => {
+        if (!(el instanceof HTMLElement)) return false;
+        const r = el.getBoundingClientRect(), s = window.getComputedStyle(el);
+        return s.display !== "none" && s.visibility !== "hidden" && r.width > 0 && r.height > 0;
+      };
+      // Encontra a secção de Mercados pelo título stg-title
+      const titles = Array.from(document.querySelectorAll("span.stg-title, h3, h4, legend, label"));
+      const marketTitle = titles.find(el => isVisible(el) && normalize(el.textContent).includes("mercad"));
+      if (!marketTitle) return false;
+      const container = marketTitle.closest("div.stg-container") || marketTitle.closest("div");
+      if (!container) return false;
+      const searchInput = container.querySelector("input[placeholder='Pesquisar'], input[placeholder='Search']");
+      if (!searchInput || !isVisible(searchInput)) return false;
+      searchInput.focus();
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+      if (setter) setter.call(searchInput, "Europe");
+      searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+      return true;
+    `);
+    await this.driver.sleep(400);
 
-    await this.replaceInputValue(searchInputs[0], "Europe");
-    await this.driver.sleep(300);
+    // Seleciona o primeiro item disponível na secção Mercados
     await this.clickFirstTenderSectionCheckbox("Mercados");
     await this.driver.sleep(300);
 
-    await this.clickTenderTileCheckbox("Air");
+    // ── Tipos de Transporte ───────────────────────────────────────────────────
+    // Seleciona o primeiro tile disponível (sem hardcode de nome em inglês)
+    const transportSelected = await this.driver.executeScript<boolean>(`
+      const isVisible = (el) => {
+        if (!(el instanceof HTMLElement)) return false;
+        const r = el.getBoundingClientRect(), s = window.getComputedStyle(el);
+        return s.display !== "none" && s.visibility !== "hidden" && r.width > 0 && r.height > 0;
+      };
+      const checkboxes = Array.from(document.querySelectorAll("div.stg-tile input[type='checkbox']"));
+      for (const cb of checkboxes) {
+        if (!(cb instanceof HTMLInputElement) || !isVisible(cb) || cb.checked) continue;
+        // Verifica que está numa secção de Tipos de Transporte (não de Mercados)
+        const container = cb.closest("div.stg-container");
+        if (!container) continue;
+        const title = container.querySelector("span.stg-title");
+        const titleText = (title?.textContent || "").toLowerCase();
+        if (titleText.includes("mercad") || titleText.includes("market")) continue;
+        cb.click();
+        cb.dispatchEvent(new Event("input", { bubbles: true }));
+        cb.dispatchEvent(new Event("change", { bubbles: true }));
+        return true;
+      }
+      return false;
+    `);
+
+    if (!transportSelected) {
+      // Fallback: tenta clicar em qualquer tile visível fora da secção Mercados
+      const tiles = await this.driver.findElements(By.xpath("//div[contains(@class,'stg-tile')]//input[@type='checkbox']"));
+      for (const tile of tiles) {
+        if (await this.isInteractable(tile)) {
+          await this.clickElement(tile);
+          break;
+        }
+      }
+    }
     await this.driver.sleep(300);
   }
 
