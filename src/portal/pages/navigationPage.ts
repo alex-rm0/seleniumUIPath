@@ -323,6 +323,8 @@ export class NavigationPage {
     );
     await this.driver.wait(until.elementIsVisible(row), portalConfig.timeoutMs);
 
+    // Right-click abre o menu de contexto; "Ver" abre a ficha de detalhes
+    // e define o tender activo no estado da aplicação React
     const actions = this.driver.actions({ async: true });
     await actions.contextClick(row).perform();
 
@@ -337,13 +339,32 @@ export class NavigationPage {
     );
     await this.driver.wait(until.elementIsVisible(viewItem), portalConfig.timeoutMs);
     await viewItem.click();
+    await this.driver.sleep(800);
+
+    // O "Ver" abre a ficha de detalhes (não o TenderInQuotation directamente).
+    // Depois de seleccionar o tender, navegamos para TenderInQuotation — o React
+    // mantém o tender activo no estado da app e mostra a página correcta.
+    const baseUrl = (await this.driver.getCurrentUrl()).split("#")[0];
+    await this.driver.get(`${baseUrl}#/home/tenders/TenderInQuotation`);
 
     await this.driver.wait(
       async () => (await this.driver.getCurrentUrl()).includes("TenderInQuotation"),
       portalConfig.timeoutMs,
-      "TenderInQuotation page did not load after clicking Ver/View"
+      "TenderInQuotation page did not load"
     );
-    await this.driver.sleep(500);
+
+    // Aguarda que os botões de vista carreguem (confirmam que o tender está carregado)
+    await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//button[contains(normalize-space(),'Vista por Transportadoras') or " +
+        "contains(normalize-space(),'Carriers View') or " +
+        "contains(normalize-space(),'Em Cotação') or " +
+        "contains(normalize-space(),'In Quotation')]"
+      )),
+      portalConfig.timeoutMs,
+      "TenderInQuotation view buttons did not appear — tender may not be in Em Cotação state"
+    );
+    await this.driver.sleep(300);
   }
 
   /**
