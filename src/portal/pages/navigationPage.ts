@@ -321,7 +321,8 @@ export class NavigationPage {
       return false;
     }, portalConfig.timeoutMs, "Esperava que o formulário de edição do tender abrisse");
 
-    // Navega pelo wizard até chegar ao passo de mensagem (se necessário)
+    // Navega pelo wizard até à textarea de mensagem — MAS só avança se existir
+    // botão "Seguinte" (evita timeout se o formulário de edição não for um wizard)
     for (let step = 0; step < 5; step++) {
       const textareas = await this.driver.findElements(this.tenderMessageTextarea);
       let found = false;
@@ -329,18 +330,51 @@ export class NavigationPage {
         if (await el.isDisplayed().catch(() => false)) { found = true; break; }
       }
       if (found) break;
+      const hasNext = await this.hasInteractableElement(this.nextWizardButton);
+      if (!hasNext) break; // formulário de edição não tem wizard → não navega
       await this.clickTenderNext();
     }
 
-    // Edita a mensagem com sendKeys (compatível com React)
-    const textarea = await this.findInteractableElement(this.tenderMessageTextarea);
-    await this.clickElement(textarea);
-    await textarea.sendKeys(Key.chord(Key.CONTROL, "a"));
-    await textarea.sendKeys(Key.DELETE);
-    await textarea.sendKeys(`Mensagem editada - ${name}`);
+    // Determina o campo a editar
+    let editTarget: WebElement | null = null;
+    const textareas = await this.driver.findElements(this.tenderMessageTextarea);
+    for (const el of textareas) {
+      if (await el.isDisplayed().catch(() => false)) { editTarget = el; break; }
+    }
 
-    // Guarda (botão "Enviar" / "Send" no topo)
-    const saveBtn = await this.findInteractableElement(this.tenderEnviarButton);
+    if (editTarget) {
+      // Edita a mensagem (passo 4 do wizard ou form com textarea)
+      await this.clickElement(editTarget);
+      await editTarget.sendKeys(Key.chord(Key.CONTROL, "a"));
+      await editTarget.sendKeys(Key.DELETE);
+      await editTarget.sendKeys(`Mensagem editada - ${name}`);
+    } else {
+      // Form directo sem textarea: edita o segundo input de texto visível
+      // (evita o primeiro que é tipicamente o nome, que identificamos na tabela)
+      const inputs = await this.driver.findElements(
+        By.css("input[type='text']:not([disabled]):not([readonly])")
+      );
+      const visible: WebElement[] = [];
+      for (const el of inputs) {
+        if (await el.isDisplayed().catch(() => false)) visible.push(el);
+      }
+      const target = visible[1] ?? visible[0];
+      if (target) {
+        const current = (await target.getAttribute("value")) ?? "";
+        await this.clickElement(target);
+        await target.sendKeys(Key.chord(Key.CONTROL, "a"));
+        await target.sendKeys(Key.DELETE);
+        await target.sendKeys(`${current} editado`.trim());
+      }
+    }
+
+    // Guarda: tenta "Enviar/Send" (wizard) ou "Guardar/Save" (form directo)
+    const saveLocator = By.xpath(
+      "//button[contains(normalize-space(),'Enviar') or contains(normalize-space(),'Send')" +
+      " or contains(normalize-space(),'Guardar') or contains(normalize-space(),'Save')" +
+      " or contains(normalize-space(),'Atualizar') or contains(normalize-space(),'Update')]"
+    );
+    const saveBtn = await this.findInteractableElement(saveLocator);
     await this.clickElement(saveBtn);
     await this.waitAfterSave();
     await this.openSpotTendersPageDirectly();
