@@ -50,6 +50,7 @@ export class NavigationPage {
   private readonly anyStgTileCheckbox = By.xpath("//div[contains(@class,'stg-tile')]//input[@type='checkbox']");
   private readonly submitMessageMarker = By.xpath("//*[normalize-space()='Submit Message' or normalize-space()='Submeter Mensagem' or normalize-space()='Message']");
   private readonly tenderMessageTextarea = By.css("textarea:not([aria-hidden='true']):not([tabindex='-1'])");
+  private readonly tenderEnviarButton = By.xpath("//button[contains(normalize-space(),'Enviar') or contains(normalize-space(),'Send') or contains(normalize-space(),'Submit')]");
   private readonly carrierInvitationCheckboxRoot = By.css("label .MuiCheckbox-root");
   private readonly newTransportTypeButton = By.xpath("//button[.//*[@data-testid='AddCircleOutlineOutlinedIcon']]");
   private readonly saveTransportTypeButton = By.css("button i.pi-save");
@@ -289,7 +290,9 @@ export class NavigationPage {
     // O marcador mais fiável para a etapa de mensagem é a própria textarea visível
     await this.clickTenderNext(this.tenderMessageTextarea);
     await this.fillTenderMessage(`Mensagem automática para o tender ${name}`);
-    await this.clickTenderNext();
+    // O botão final é "Enviar" (toolbar do topo), não "Seguinte" — submete o concurso
+    const enviarBtn = await this.findInteractableElement(this.tenderEnviarButton);
+    await this.clickElement(enviarBtn);
     await this.waitAfterSave();
 
     await this.openSpotTendersPageDirectly();
@@ -633,22 +636,12 @@ export class NavigationPage {
   private async fillTenderMessage(message: string): Promise<void> {
     const textarea = await this.findInteractableElement(this.tenderMessageTextarea);
     await this.clickElement(textarea);
-    // Usa o setter nativo do HTMLTextAreaElement (não HTMLInputElement)
-    await this.driver.executeScript(
-      `
-        const el = arguments[0];
-        const val = arguments[1];
-        const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")?.set;
-        if (setter) setter.call(el, val);
-        else el.value = val;
-        el.dispatchEvent(new Event("input",  { bubbles: true }));
-        el.dispatchEvent(new Event("change", { bubbles: true }));
-        el.dispatchEvent(new Event("blur",   { bubbles: true }));
-      `,
-      textarea,
-      message
-    );
-    // Verifica pelo .value property (não getAttribute que devolve o valor inicial)
+    // sendKeys dispara eventos reais (keydown/keypress/keyup) que o React intercepta.
+    // JS injection com dispatchEvent(new Event("input")) não actualiza o estado React.
+    await textarea.sendKeys(Key.chord(Key.CONTROL, "a"));
+    await textarea.sendKeys(Key.DELETE);
+    await textarea.sendKeys(message);
+    // Verifica pelo .value property
     await this.driver.wait(
       async () => {
         const current = await this.driver.executeScript<string>("return arguments[0].value;", textarea);
