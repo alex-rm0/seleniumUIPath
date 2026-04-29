@@ -678,80 +678,33 @@ export class NavigationPage {
     deliveryAddress: string,
     deliverTo: string
   ): Promise<void> {
-    // Estratégia mais robusta: procura inputs por label/placeholder específico
-    // em vez de depender de posição relativa num array com tamanho fixo.
-    await this.fillTenderInputByLabelOrPosition(0, name, ["nome", "name", "concurso", "tender"]);
-    await this.fillTenderDateInputByLabelOrPosition(1, responseDeadline, ["prazo", "deadline", "resposta", "response"]);
-    await this.fillTenderDateInputByLabelOrPosition(2, shipmentStartDate, ["início", "inicio", "start", "embarque", "shipment start"]);
-    await this.fillTenderDateInputByLabelOrPosition(3, shipmentEndDate, ["fim", "end", "término", "shipment end"]);
-    await this.fillTenderInputByLabelOrPosition(4, pickupAddress, ["recolha", "pickup", "origem", "origin"]);
-    await this.fillTenderInputByLabelOrPosition(5, deliveryAddress, ["entrega", "delivery", "destino", "destination"]);
-    await this.fillTenderInputByLabelOrPosition(6, deliverTo, ["entregar a", "deliver to", "destinatário"]);
-  }
-
-  private async getTenderInformationInputs(): Promise<WebElement[]> {
     const inputs = await this.findInteractableElements(this.tenderInformationSectionInputs);
-    const sorted = await this.sortElementsByPosition(inputs);
+    const topInputs = await this.sortElementsByPosition(inputs);
     const filtered: WebElement[] = [];
-    for (const input of sorted) {
+    for (const input of topInputs) {
       const placeholder = ((await input.getAttribute("placeholder")) ?? "").trim().toLowerCase();
-      const type        = ((await input.getAttribute("type")) ?? "").trim().toLowerCase();
-      const role        = ((await input.getAttribute("role")) ?? "").trim().toLowerCase();
-      const value       = ((await input.getAttribute("value")) ?? "").trim().toLowerCase();
+      const type = ((await input.getAttribute("type")) ?? "").trim().toLowerCase();
+      const role = ((await input.getAttribute("role")) ?? "").trim().toLowerCase();
+      const value = ((await input.getAttribute("value")) ?? "").trim();
       if (placeholder === "pesquisar" || placeholder === "search") continue;
       if (role === "combobox") continue;
       if (!["text", "date"].includes(type)) continue;
       if (value === "spot" || value === "fcl") continue;
       filtered.push(input);
     }
-    return filtered;
-  }
 
-  private async fillTenderInputByLabelOrPosition(
-    positionFallback: number,
-    value: string,
-    labelKeywords: string[]
-  ): Promise<void> {
-    const inputs = await this.getTenderInformationInputs();
-    const target = await this.findInputByLabelKeyword(inputs, labelKeywords)
-      ?? inputs[positionFallback];
-    if (!target) throw new Error(`Não foi possível encontrar input (posição ${positionFallback}, keywords: ${labelKeywords.join(", ")})`);
-    await this.replaceInputValue(target, value);
-  }
-
-  private async fillTenderDateInputByLabelOrPosition(
-    positionFallback: number,
-    value: string,
-    labelKeywords: string[]
-  ): Promise<void> {
-    const inputs = await this.getTenderInformationInputs();
-    const target = await this.findInputByLabelKeyword(inputs, labelKeywords)
-      ?? inputs[positionFallback];
-    if (!target) throw new Error(`Não foi possível encontrar input de data (posição ${positionFallback}, keywords: ${labelKeywords.join(", ")})`);
-    await this.replaceDateInputValue(target, value);
-  }
-
-  private async findInputByLabelKeyword(
-    inputs: WebElement[],
-    keywords: string[]
-  ): Promise<WebElement | null> {
-    for (const input of inputs) {
-      const id          = ((await input.getAttribute("id")) ?? "").toLowerCase();
-      const placeholder = ((await input.getAttribute("placeholder")) ?? "").toLowerCase();
-      const ariaLabel   = ((await input.getAttribute("aria-label")) ?? "").toLowerCase();
-      // tenta encontrar o label associado
-      let labelText = "";
-      try {
-        if (id) {
-          const labelEl = await this.driver.findElement(By.css(`label[for="${id}"]`));
-          labelText = ((await labelEl.getText()) ?? "").toLowerCase();
-        }
-      } catch { /* sem label associado */ }
-
-      const haystack = `${id} ${placeholder} ${ariaLabel} ${labelText}`;
-      if (keywords.some((kw) => haystack.includes(kw))) return input;
+    if (filtered.length < 4) {
+      throw new Error(`Esperava encontrar pelo menos 4 inputs no formulário de concurso, mas encontrei ${filtered.length}`);
     }
-    return null;
+
+    // Preenche por posição — a ordem é determinada pela posição visual top→bottom, left→right
+    await this.replaceInputValue(filtered[0], name);
+    if (filtered[1]) await this.replaceDateInputValue(filtered[1], responseDeadline);
+    if (filtered[2]) await this.replaceDateInputValue(filtered[2], shipmentStartDate);
+    if (filtered[3]) await this.replaceDateInputValue(filtered[3], shipmentEndDate);
+    if (filtered[4]) await this.replaceInputValue(filtered[4], pickupAddress);
+    if (filtered[5]) await this.replaceInputValue(filtered[5], deliveryAddress);
+    if (filtered[6]) await this.replaceInputValue(filtered[6], deliverTo);
   }
 
   private async selectTenderMarketAndTransportType(): Promise<void> {
