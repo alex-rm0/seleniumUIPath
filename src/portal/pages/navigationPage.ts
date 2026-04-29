@@ -987,11 +987,26 @@ export class NavigationPage {
   }
 
   private async waitAfterSave(): Promise<void> {
+    // 1. Espera que o alerta de sucesso apareça (ou dá um sleep de segurança)
     try {
       await this.waitForSuccessAlert("sucesso");
     } catch {
-      await this.driver.sleep(1000);
+      await this.driver.sleep(1500);
     }
+    // 2. Aguarda que todos os toasts/alerts desapareçam antes de continuar,
+    //    para não bloquearem cliques subsequentes (ex: botão de logout).
+    const anyAlert = By.xpath("//*[contains(@class,'MuiAlert-root') or contains(@class,'MuiSnackbar-root')]");
+    await this.driver.wait(
+      async () => {
+        const alerts = await this.driver.findElements(anyAlert);
+        for (const el of alerts) {
+          if (await el.isDisplayed().catch(() => false)) return false;
+        }
+        return true;
+      },
+      portalConfig.timeoutMs,
+      "Esperava que os toasts/alerts desaparecessem"
+    ).catch(() => { /* se não desaparecerem dentro do timeout, continua na mesma */ });
   }
 
   private async findInteractableElement(locator: By): Promise<WebElement> {

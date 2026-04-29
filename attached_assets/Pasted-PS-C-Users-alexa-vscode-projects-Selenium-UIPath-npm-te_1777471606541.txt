@@ -1,0 +1,22 @@
+PS C:\Users\alexa\.vscode\projects\Selenium + UIPath> npm test -- TC020
+
+> pharmanova-qa-automation@1.0.0 test
+> ts-node src/main.ts TC020
+
+Testes selecionados: TC020
+
+[driverFactory] using chromedriver path: C:\Users\alexa\.vscode\projects\Selenium + UIPath\node_modules\chromedriver\lib\chromedriver\chromedriver.exe
+
+DevTools listening on ws://127.0.0.1:62892/devtools/browser/77588d25-99e2-4de1-a5be-def3c1bb134b
+[16008:7400:0429/150633.050:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
+[16008:7400:0429/150633.076:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
+[16008:7400:0429/150633.079:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
+[6788:31124:0429/150633.599:ERROR:net\socket\ssl_client_socket_impl.cc:924] handshake failed; returned -1, SSL error code 1, net_error -101
+[6788:31124:0429/150633.627:ERROR:net\socket\ssl_client_socket_impl.cc:924] handshake failed; returned -1, SSL error code 1, net_error -101
+[carrier-debug] saved C:\Users\alexa\.vscode\projects\Selenium + UIPath\reports\debug\tc020-carriers-section-2026-04-29_15-06-34.html
+Created TensorFlow Lite XNNPACK delegate for CPU.
+TC020 - FAIL - Tenders failed. element click intercepted: Element <div class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters MuiListItemButton-root MuiListItemButton-gutters userSettingsButton css-1qm8dkc" tabindex="0" role="button">...</div> is not clickable at point (89, 577). Other element would receive the click: <div class="MuiTypography-root MuiTypography-body1 MuiTypography-gutterBottom MuiAlertTitle-root css-dvcuxc" style="text-transform: capitalize;">...</div>
+  (Session info: chrome=147.0.7727.102)
+
+Relatório JSON: C:\Users\alexa\.vscode\projects\Selenium + UIPath\reports\test-results-2026-04-29_15-06-39.json
+Relatório HTML: C:\Users\alexa\.vscode\projects\Selenium + UIPath\reports\test-results-2026-04-29_15-06-39.html
