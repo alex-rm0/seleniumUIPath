@@ -81,8 +81,9 @@ export class CarrierPage {
   }
 
   public async logout(): Promise<void> {
-    // No carrier portal o botão "Terminar Sessão" está sempre visível na barra lateral
-    // (ícone pi-sign-out com aria-label)
+    // O botão "Terminar Sessão" só é visível quando o menu lateral está aberto
+    await this.openSideMenu();
+
     const btn = await this.driver.wait(
       until.elementLocated(this.logoutButton),
       portalConfig.timeoutMs,
