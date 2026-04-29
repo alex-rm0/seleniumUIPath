@@ -19,4 +19,4 @@
 - TC017 - Selecionar Porto de Marselha em Localizacoes, abrir a edicao e confirmar a tab de detalhe.
 - TC018 - Criar um novo mercado, editar o nome, eliminar o mercado e confirmar o regresso a pagina de login.
 - TC019 - Criar um novo tipo de transporte, editar o nome, eliminar o registo e confirmar o regresso a pagina de login.
-- TC020 - Criar um spot tender com dados de teste e validar que aparece na tabela de Spot Tenders.
+- TC020 - Criar um spot tender com dados de teste, editar e eliminar o registo.
