@@ -196,21 +196,30 @@ export async function executeFlow(driver: WebDriver, testCase: TestCase): Promis
       if (!returnedToLogin) throw new Error("Esperava regressar à página de login após logout");
 
       // Parte 2 — validar tender no portal de carrier
-      const carrierUrl      = testCase.input.carrierUrl      ?? "https://dev.nexus.shipperform.devlop.systems/#/carrier/login";
-      const carrierUsername = testCase.input.carrierUsername ?? "";
-      const carrierPassword = testCase.input.carrierPassword ?? "";
+      const carrierUrl      = testCase.input.carrierUrl;
+      const carrierUsername = testCase.input.carrierUsername;
+      const carrierPassword = testCase.input.carrierPassword;
 
-      if (carrierUsername) {
-        const carrier = new CarrierPage(driver);
-        await carrier.openAndLogin(carrierUrl, carrierUsername, carrierPassword);
-        await carrier.openSideMenu();
-        await carrier.openTendersSectionDropdown();
-        await carrier.navigateToSpotTenders();
-        await carrier.expectSpotTenderVisible(tenderName);
-        await carrier.logout();
-        const carrierReturnedToLogin = await carrier.isLoginPageVisible();
-        if (!carrierReturnedToLogin) throw new Error("Esperava regressar ao login do carrier após logout");
+      if (!carrierUrl || !carrierUsername || !carrierPassword) {
+        throw new Error(
+          `TC "${testCase.id}" usa o flow "createSpotTenderOnly" mas faltam campos obrigatórios: ` +
+          [
+            !carrierUrl      ? "carrierUrl"      : null,
+            !carrierUsername ? "carrierUsername" : null,
+            !carrierPassword ? "carrierPassword" : null,
+          ].filter(Boolean).join(", ")
+        );
       }
+
+      const carrier = new CarrierPage(driver);
+      await carrier.openAndLogin(carrierUrl, carrierUsername, carrierPassword);
+      await carrier.openSideMenu();
+      await carrier.openTendersSectionDropdown();
+      await carrier.navigateToSpotTenders();
+      await carrier.expectSpotTenderVisible(tenderName);
+      await carrier.logout();
+      const carrierReturnedToLogin = await carrier.isLoginPageVisible();
+      if (!carrierReturnedToLogin) throw new Error("Esperava regressar ao login do carrier após logout");
     }
 
   } else {
