@@ -307,6 +307,254 @@ export class NavigationPage {
     await this.findInteractableElement(By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`));
   }
 
+  // ─── Fluxo de aceitação de quotes e fecho de tender (TC022 Parte 3) ────────
+
+  /**
+   * Clica com o botão direito no tender da tabela e clica em "Ver" / "View"
+   * no menu de contexto → navega para TenderInQuotation.
+   * Seletores validados via: tender_spot_em_cotacao.json, tender_spot_em_cotacao_depoisdebotaodireito.json
+   */
+  public async rightClickAndViewSpotTender(name: string): Promise<void> {
+    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
+    const row = await this.driver.wait(
+      until.elementLocated(rowLocator),
+      portalConfig.timeoutMs,
+      `Tender row "${name}" not found for right-click`
+    );
+    await this.driver.wait(until.elementIsVisible(row), portalConfig.timeoutMs);
+
+    const actions = this.driver.actions({ async: true });
+    await actions.contextClick(row).perform();
+
+    const viewItemLocator = By.xpath(
+      "//*[@role='menuitem' or contains(@class,'context-menu') or contains(@class,'p-menuitem')]" +
+      "[contains(normalize-space(),'Ver') or contains(normalize-space(),'View')]"
+    );
+    const viewItem = await this.driver.wait(
+      until.elementLocated(viewItemLocator),
+      portalConfig.timeoutMs,
+      "Context menu 'Ver/View' option did not appear"
+    );
+    await this.driver.wait(until.elementIsVisible(viewItem), portalConfig.timeoutMs);
+    await viewItem.click();
+
+    await this.driver.wait(
+      async () => (await this.driver.getCurrentUrl()).includes("TenderInQuotation"),
+      portalConfig.timeoutMs,
+      "TenderInQuotation page did not load after clicking Ver/View"
+    );
+    await this.driver.sleep(500);
+  }
+
+  /**
+   * Clica no botão "Vista por Transportadoras" / "Carriers View".
+   * Seletores: tenders_carriers_view.json → button "Carriers View" pi pi-truck
+   */
+  public async clickCarriersView(): Promise<void> {
+    const btn = await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//button[contains(normalize-space(),'Vista por Transportadoras') or " +
+        "contains(normalize-space(),'Carriers View')]"
+      )),
+      portalConfig.timeoutMs,
+      "Carriers View button not found"
+    );
+    await this.driver.wait(until.elementIsVisible(btn), portalConfig.timeoutMs);
+    await btn.click();
+
+    // Aguarda que a tabela da Carriers View carregue (coluna "Select quote")
+    await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//th[normalize-space()='Select quote'] | //th[contains(normalize-space(),'Select quote')]"
+      )),
+      portalConfig.timeoutMs,
+      "Carriers View table did not load (Select quote column not found)"
+    );
+    await this.driver.sleep(300);
+  }
+
+  /**
+   * Selecciona todas as quotes não seleccionadas na tabela activa (coluna "Select quote").
+   * Usado nas vistas Carriers View e Lanes View.
+   * Seletores: tenders_carriers_view.json / tenders_lanes_view.json → input PrivateSwitchBase-input
+   */
+  public async selectAllQuotesInTable(): Promise<void> {
+    // Os checkboxes da coluna "Select quote" usam MUI Switch (PrivateSwitchBase-input)
+    // Precisamos clicar nos que ainda não estão marcados
+    await this.driver.wait(async () => {
+      const inputs = await this.driver.findElements(
+        By.css("input.PrivateSwitchBase-input, input[class*='PrivateSwitchBase']")
+      );
+      let clicked = 0;
+      for (const input of inputs) {
+        if (!(await input.isDisplayed().catch(() => false))) continue;
+        const checked = await input.getAttribute("checked");
+        const isChecked = checked === "true" || checked === "";
+        if (!isChecked) {
+          // Clica no label/span pai (o switch visível), não no input escondido
+          const parent = await this.driver.executeScript(
+            "return arguments[0].closest('.MuiSwitch-root, .MuiCheckbox-root, .MuiFormControlLabel-root') || arguments[0].parentElement;",
+            input
+          ) as ReturnType<typeof this.driver.findElement>;
+          try {
+            await this.driver.executeScript("arguments[0].scrollIntoView({block:'center'});", parent);
+            await this.driver.executeScript("arguments[0].click();", parent);
+            clicked++;
+            await this.driver.sleep(200);
+          } catch { /* elemento pode ter sido removido do DOM */ }
+        }
+      }
+      return true;
+    }, portalConfig.timeoutMs, "Could not select quotes");
+
+    await this.driver.sleep(500);
+  }
+
+  /**
+   * Clica no botão "Vista por Percursos" / "Lanes View".
+   * Seletores: tenders_lanes_view.json → button "Lanes View" pi pi-arrow-right-arrow-left
+   */
+  public async clickLanesView(): Promise<void> {
+    const btn = await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//button[contains(normalize-space(),'Vista por Percursos') or " +
+        "contains(normalize-space(),'Lanes View')]"
+      )),
+      portalConfig.timeoutMs,
+      "Lanes View button not found"
+    );
+    await this.driver.wait(until.elementIsVisible(btn), portalConfig.timeoutMs);
+    await btn.click();
+
+    // Aguarda que a tabela da Lanes View carregue (coluna "Carrier")
+    await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//th[normalize-space()='Carrier' or normalize-space()='Transportadora']"
+      )),
+      portalConfig.timeoutMs,
+      "Lanes View table did not load (Carrier column not found)"
+    );
+    await this.driver.sleep(300);
+  }
+
+  /**
+   * Clica no botão "Vista de Resumo" / "Summary View".
+   * Seletores: tenders_summary_view.json → button "Summary View" pi pi-chart-bar
+   */
+  public async clickSummaryView(): Promise<void> {
+    const btn = await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//button[contains(normalize-space(),'Vista de Resumo') or " +
+        "contains(normalize-space(),'Summary View')]"
+      )),
+      portalConfig.timeoutMs,
+      "Summary View button not found"
+    );
+    await this.driver.wait(until.elementIsVisible(btn), portalConfig.timeoutMs);
+    await btn.click();
+
+    // Aguarda que a tabela do Summary carregue (coluna "Total Quotes" ou "Total Cotações")
+    await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//th[contains(normalize-space(),'Total Quotes') or contains(normalize-space(),'Cotações')]"
+      )),
+      portalConfig.timeoutMs,
+      "Summary View table did not load"
+    );
+    await this.driver.sleep(300);
+  }
+
+  /**
+   * Clica em "Terminar Concurso" / "Finish Tender" e confirma o diálogo se aparecer.
+   * Seletores: tenders_em_contacao_view.json / tenders_summary_view.json → button "Finish Tender" pi pi-check
+   * Aguarda o toast de sucesso.
+   */
+  public async clickFinishTender(): Promise<void> {
+    const btn = await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//button[contains(normalize-space(),'Terminar Concurso') or " +
+        "contains(normalize-space(),'Finish Tender')]"
+      )),
+      portalConfig.timeoutMs,
+      "Finish Tender button not found"
+    );
+    await this.driver.wait(until.elementIsVisible(btn), portalConfig.timeoutMs);
+    await this.driver.wait(until.elementIsEnabled(btn), portalConfig.timeoutMs);
+    await btn.click();
+
+    // Confirmação: pode aparecer um diálogo MUI com botão "Confirmar", "Confirm", "Sim", "Yes", "OK"
+    await this.driver.sleep(500);
+    const confirmLocator = By.xpath(
+      "//button[" +
+        "contains(normalize-space(),'Confirmar') or " +
+        "contains(normalize-space(),'Confirm') or " +
+        "contains(normalize-space(),'Sim') or " +
+        "contains(normalize-space(),'Yes') or " +
+        "normalize-space()='OK'" +
+      "][not(contains(@class,'p-paginator'))]"
+    );
+    const confirmBtns = await this.driver.findElements(confirmLocator);
+    for (const cb of confirmBtns) {
+      if (await cb.isDisplayed().catch(() => false)) {
+        await cb.click();
+        break;
+      }
+    }
+
+    // Aguarda toast de sucesso
+    await this.driver.wait(
+      until.elementLocated(By.css("div.MuiAlert-root.MuiAlert-colorSuccess.MuiAlert-filledSuccess")),
+      portalConfig.timeoutMs,
+      "Success alert did not appear after finishing tender"
+    );
+
+    // Aguarda que todos os toasts desapareçam
+    await this.driver.wait(async () => {
+      const alerts = await this.driver.findElements(
+        By.css("div.MuiSnackbar-root, div.MuiAlert-root")
+      );
+      for (const a of alerts) {
+        if (await a.isDisplayed().catch(() => false)) return false;
+      }
+      return true;
+    }, portalConfig.timeoutMs).catch(() => {});
+  }
+
+  /**
+   * Navega para a tabela de spot tenders e verifica que o tender aparece
+   * com o campo "Finalizado" / "Is Finished" = true (switch MUI marcado).
+   * Seletores: spot_tenders_finished.json → coluna "Is Finished" / "Finalizado"
+   */
+  public async expectTenderIsFinishedInTable(name: string): Promise<void> {
+    // Aguarda que a linha do tender esteja visível na tabela
+    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
+    const row = await this.driver.wait(
+      until.elementLocated(rowLocator),
+      portalConfig.timeoutMs,
+      `Tender row "${name}" not found in table`
+    );
+    await this.driver.wait(until.elementIsVisible(row), portalConfig.timeoutMs);
+
+    // Verifica que o switch de "Finalizado" / "Is Finished" está marcado
+    // O switch usa MuiSwitch-switchBase.Mui-checked dentro da linha
+    await this.driver.wait(async () => {
+      const isFinishedSwitch = await row.findElements(
+        By.css("span.MuiSwitch-switchBase.Mui-checked, input.PrivateSwitchBase-input[checked]")
+      );
+      if (isFinishedSwitch.length > 0) return true;
+
+      // Fallback: verifica atributo checked nos inputs dentro da linha
+      const inputs = await row.findElements(By.css("input.PrivateSwitchBase-input"));
+      for (const input of inputs) {
+        const val = await input.getAttribute("checked").catch(() => null);
+        if (val === "true" || val === "") return true;
+      }
+      return false;
+    }, portalConfig.timeoutMs,
+      `Tender "${name}" does not appear as finished (Finalizado/Is Finished not checked)`
+    );
+  }
+
   public async editSpotTender(name: string): Promise<void> {
     const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
     const row = await this.findInteractableElement(rowLocator);

@@ -6,7 +6,13 @@ export class LoginPage {
   private readonly passwordInput = By.css('input[type="password"]');
   private readonly submitButton = By.css("button.buttonClass.buttonClassHover");
   private readonly menuButton = By.css('button[aria-label="Menu"][aria-haspopup="true"]');
-  private readonly logoutButton = By.xpath("//div[@role='button'][.//span[contains(normalize-space(), 'Terminar Sess')]]");
+  // Padrão antigo: dropdown (shipper portal — menu colapsado)
+  private readonly logoutButtonDropdown = By.xpath("//div[@role='button'][.//span[contains(normalize-space(), 'Terminar Sess')]]");
+  // Padrão directo: botão sempre visível na sidebar (TenderInQuotation, spot-tenders-finished, EN/PT)
+  private readonly logoutButtonDirect = By.xpath(
+    "//button[@aria-label='Terminar Sessão' or @aria-label='Logout']" +
+    "[contains(@class,'userSettingsIconButton')]"
+  );
   private readonly successTitle = By.css("div.MuiAlert-root.MuiAlert-colorSuccess.MuiAlert-filledSuccess");
   private readonly errorMessage = By.css("div.MuiAlert-root.MuiAlert-colorError.MuiAlert-filledError");
 
@@ -26,27 +32,39 @@ export class LoginPage {
   }
 
   public async logout(): Promise<void> {
-    if (!(await this.isLogoutButtonVisible())) {
-      const menu = await this.driver.wait(
-        until.elementLocated(this.menuButton),
-        portalConfig.timeoutMs
-      );
-      await menu.click();
+    // 1. Tenta o botão directo na sidebar (TenderInQuotation e páginas com sidebar expandida)
+    if (await this.isVisible(this.logoutButtonDirect)) {
+      const btn = await this.driver.findElement(this.logoutButtonDirect);
+      await this.driver.wait(until.elementIsEnabled(btn), portalConfig.timeoutMs);
+      await btn.click();
+      return;
+    }
+
+    // 2. Padrão antigo: dropdown (abre menu → clica "Terminar Sessão")
+    if (!(await this.isVisible(this.logoutButtonDropdown))) {
+      const menus = await this.driver.findElements(this.menuButton);
+      for (const m of menus) {
+        if (await m.isDisplayed().catch(() => false)) {
+          await m.click();
+          break;
+        }
+      }
     }
 
     const button = await this.driver.wait(
-      until.elementLocated(this.logoutButton),
-      portalConfig.timeoutMs
+      until.elementLocated(this.logoutButtonDropdown),
+      portalConfig.timeoutMs,
+      "Logout button not found (tried both direct and dropdown patterns)"
     );
     await this.driver.wait(until.elementIsVisible(button), portalConfig.timeoutMs);
     await this.driver.wait(until.elementIsEnabled(button), portalConfig.timeoutMs);
     await button.click();
   }
 
-  private async isLogoutButtonVisible(): Promise<boolean> {
-    const buttons = await this.driver.findElements(this.logoutButton);
-    for (const button of buttons) {
-      if (await button.isDisplayed()) return true;
+  private async isVisible(locator: By): Promise<boolean> {
+    const els = await this.driver.findElements(locator);
+    for (const el of els) {
+      if (await el.isDisplayed().catch(() => false)) return true;
     }
     return false;
   }

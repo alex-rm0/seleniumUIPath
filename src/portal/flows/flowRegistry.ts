@@ -286,6 +286,27 @@ export async function executeFlow(driver: WebDriver, testCase: TestCase): Promis
       await carrier.logout();
       const carrierReturned = await carrier.isLoginPageVisible();
       if (!carrierReturned) throw new Error("Esperava regressar ao login do carrier após logout");
+
+      // Parte 3 — shipper: aceita quotes e fecha o tender
+      await page.open();
+      await page.login(testCase.input.username, testCase.input.password);
+      await page.getSuccessMessage();
+
+      await navigation.openSpotTenders();
+      await navigation.rightClickAndViewSpotTender(tenderName);
+      await navigation.clickCarriersView();
+      await navigation.selectAllQuotesInTable();
+      await navigation.clickLanesView();
+      await navigation.clickSummaryView();
+      await navigation.clickFinishTender();
+
+      // Navega de volta à lista e verifica que o tender está marcado como finalizado
+      await navigation.openSpotTenders();
+      await navigation.expectTenderIsFinishedInTable(tenderName);
+
+      await page.logout();
+      const shipperReturned3 = await page.isLoginPageVisible();
+      if (!shipperReturned3) throw new Error("Esperava regressar ao login do shipper após logout final");
     }
 
   } else {
