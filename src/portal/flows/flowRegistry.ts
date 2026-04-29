@@ -1,11 +1,11 @@
-import { WebDriver } from "selenium-webdriver";
+﻿import { WebDriver } from "selenium-webdriver";
 import { TestCase } from "../../engine/types/testCase";
 import { LoginPage } from "../pages/loginPage";
 import { NavigationPage } from "../pages/navigationPage";
 
 /**
- * Executa o fluxo completo de um caso de teste: login, navegação e logout.
- * Esta função é passada ao motor (testRunner) via injeção de dependência.
+ * Executa o fluxo completo de um caso de teste: login, navegaÃ§Ã£o e logout.
+ * Esta funÃ§Ã£o Ã© passada ao motor (testRunner) via injeÃ§Ã£o de dependÃªncia.
  * Para adicionar novos flows, basta adicionar um bloco if/else aqui.
  */
 export async function executeFlow(driver: WebDriver, testCase: TestCase): Promise<void> {
@@ -114,7 +114,7 @@ export async function executeFlow(driver: WebDriver, testCase: TestCase): Promis
       await navigation.expectMarketNotVisible(marketRename);
       await page.logout();
       const returnedToLogin = await page.isLoginPageVisible();
-      if (!returnedToLogin) throw new Error("Esperava regressar à página de login após logout");
+      if (!returnedToLogin) throw new Error("Esperava regressar Ã  pÃ¡gina de login apÃ³s logout");
     }
 
     if (flow === "createEditDeleteTransportType") {
@@ -131,8 +131,35 @@ export async function executeFlow(driver: WebDriver, testCase: TestCase): Promis
       await navigation.expectTransportTypeNotVisible(transportTypeRename);
       await page.logout();
       const returnedToLogin = await page.isLoginPageVisible();
-      if (!returnedToLogin) throw new Error("Esperava regressar à página de login após logout");
+      if (!returnedToLogin) throw new Error("Esperava regressar Ã  pÃ¡gina de login apÃ³s logout");
     }
+    if (flow === "createSpotTender") {
+      const tenderName = testCase.input.tenderNamePrefix
+        ? `${testCase.input.tenderNamePrefix} ${Date.now()}`
+        : (testCase.input.tenderName ?? `Tender Auto ${Date.now()}`);
+
+      const responseDeadline = testCase.input.responseDeadline ?? "2026-05-20";
+      const shipmentStartDate = testCase.input.shipmentStartDate ?? "2026-05-25";
+      const shipmentEndDate = testCase.input.shipmentEndDate ?? "2026-05-30";
+      const pickupAddress = testCase.input.pickupAddress ?? "Porto";
+      const deliveryAddress = testCase.input.deliveryAddress ?? "Rotterdam";
+      const deliverTo = testCase.input.deliverTo ?? "QA Carrier";
+
+      await navigation.createSpotTender(
+        tenderName,
+        responseDeadline,
+        shipmentStartDate,
+        shipmentEndDate,
+        pickupAddress,
+        deliveryAddress,
+        deliverTo
+      );
+      await navigation.expectSpotTenderVisible(tenderName);
+      await page.logout();
+      const returnedToLogin = await page.isLoginPageVisible();
+      if (!returnedToLogin) throw new Error("Esperava regressar Ã  pÃ¡gina de login apÃ³s logout");
+    }
+
   } else {
     actualMessage = testCase.expected.expectedAlertType === "error"
       ? await page.getErrorMessage()
@@ -143,3 +170,4 @@ export async function executeFlow(driver: WebDriver, testCase: TestCase): Promis
     throw new Error(`Expected "${testCase.expected.expectedMessage}" but got "${actualMessage!}"`);
   }
 }
+

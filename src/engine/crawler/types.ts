@@ -18,6 +18,16 @@ export interface ExtractedElement {
   cssSelector: string;
   xpath: string;
   interactable: boolean;
+  visible?: boolean;
+  nearestSection?: string | null;
+  parentText?: string | null;
+  attributes?: Record<string, string | null>;
+  rect?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
 }
 
 export interface CrawledPage {

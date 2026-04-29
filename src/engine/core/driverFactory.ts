@@ -16,5 +16,15 @@ export async function createDriver(): Promise<WebDriver> {
   console.log(`[driverFactory] using chromedriver path: ${chromeDriverPath}`);
 
   const service = new chrome.ServiceBuilder(chromeDriverPath);
-  return new Builder().forBrowser(engineConfig.browser).setChromeService(service).build();
+  const options = new chrome.Options();
+
+  // Workaround temporario para o ambiente dev com certificado invalido.
+  // Remover quando o certificado do portal estiver corrigido.
+  options.addArguments("--ignore-certificate-errors");
+
+  return new Builder()
+    .forBrowser(engineConfig.browser)
+    .setChromeService(service)
+    .setChromeOptions(options)
+    .build();
 }

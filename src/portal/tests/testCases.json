@@ -268,5 +268,26 @@
       "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
       "navigationFlow": "createEditDeleteTransportType"
     }
+  },
+  {
+    "id": "TC020",
+    "title": "Criar spot tender e validar na tabela",
+    "processArea": "Tenders",
+    "input": {
+      "username": "sandrodev",
+      "password": "Sandrodev-123",
+      "tenderNamePrefix": "QA Spot Tender",
+      "responseDeadline": "2026-05-20",
+      "shipmentStartDate": "2026-05-25",
+      "shipmentEndDate": "2026-05-30",
+      "pickupAddress": "Porto",
+      "deliveryAddress": "Rotterdam",
+      "deliverTo": "QA Carrier"
+    },
+    "expected": {
+      "shouldPass": true,
+      "expectedMessage": "Sucesso\nSucesso, est\u00e1 autenticado!",
+      "navigationFlow": "createSpotTender"
+    }
   }
 ]

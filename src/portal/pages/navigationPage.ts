@@ -1,4 +1,7 @@
-import { By, Key, until, WebDriver, WebElement } from "selenium-webdriver";
+﻿import { By, Key, until, WebDriver, WebElement } from "selenium-webdriver";
+import * as fs from "fs";
+import * as path from "path";
+import { ensureDirectoryExists, timestampForFileName } from "../../engine/core/fileSystem";
 import { portalConfig } from "../config/portalConfig";
 
 export class NavigationPage {
@@ -12,7 +15,7 @@ export class NavigationPage {
   private readonly westernEuropeRow = By.xpath("//tr[@role='row'][.//td[normalize-space()='Western Europe']]");
   private readonly refreshButton = By.css("button i.pi.pi-refresh");
   private readonly editButton = By.css("button i.pi.pi-pencil.iconTable");
-  private readonly marketInfoTitle = By.xpath("//*[normalize-space()='Informações do Mercado']");
+  private readonly marketInfoTitle = By.xpath("//*[normalize-space()='InformaÃ§Ãµes do Mercado']");
   private readonly westernEuropeInput = By.xpath("//input[@value='Western Europe']");
   private readonly portoMarselhaRow = By.xpath("//tr[@role='row'][.//td[normalize-space()='Porto de Marselha']]");
   private readonly newMarketButton = By.xpath("//button[.//*[contains(@class,'pi-plus') or contains(@data-testid,'Add') or contains(@data-testid,'AddCircle')]]");
@@ -23,6 +26,29 @@ export class NavigationPage {
   private readonly locationInfoTitle = By.xpath("//*[contains(normalize-space(), 'Inform') and contains(normalize-space(), 'Localiza')]");
   private readonly portoMarselhaInput = By.xpath("//input[@value='Porto de Marselha']");
   private readonly transportTypesButton = By.xpath("//div[@role='button'][.//span[contains(normalize-space(),'Tipos de Transporte')]]");
+  private readonly tendersSectionButton = By.xpath("//div[@role='button'][.//span[normalize-space()='Tenders' or contains(normalize-space(),'Concursos') or contains(normalize-space(),'Concurs')]]");
+  private readonly spotTendersButton = By.xpath("//div[@role='button'][@aria-label='Spot Tenders' or @aria-label='Concursos Diretos' or @aria-label='Concursos Inmediatos' or .//span[normalize-space()='Spot Tenders']]");
+  private readonly createTenderButton = By.xpath("//div[@role='button'][.//*[@data-testid='AddchartIcon'] or .//span[normalize-space()='Create Tender' or normalize-space()='Criar Concurso' or normalize-space()='Crear Licitación']]");
+  private readonly spotTendersPageTitle = By.xpath("//*[normalize-space()='Spot Tenders' or normalize-space()='Concursos Diretos' or normalize-space()='Concursos Inmediatos']");
+  private readonly createTenderFormMarker = By.xpath("//*[normalize-space()='Create Tender' or normalize-space()='Criar Concurso' or normalize-space()='Tender Information' or normalize-space()='InformaÃ§Ãµes do Concurso' or normalize-space()='Pickup Address' or normalize-space()='EndereÃ§o de recolha' or normalize-space()='Delivery Address' or normalize-space()='EndereÃ§o de Entrega' or normalize-space()='Deliver To' or normalize-space()='Entregar a']");
+  private readonly tenderInformationSectionInputs = By.xpath("//*[contains(normalize-space(),'Concurso') or contains(normalize-space(),'Tender Information')]/ancestor::*[self::div or self::section][1]//input");
+  private readonly nextWizardButton = By.xpath("//button[.//i[contains(@class,'pi-arrow-right')] or contains(normalize-space(),'Next') or contains(normalize-space(),'Seguinte')]");
+  private readonly finishTenderButton = By.xpath("//button[contains(normalize-space(),'Send') or contains(normalize-space(),'Submit') or contains(normalize-space(),'Create') or contains(normalize-space(),'Guardar') or contains(normalize-space(),'Finish') or contains(normalize-space(),'Concluir')]");
+  private readonly tenderRowCheckbox = By.xpath("//input[@type='checkbox' and @aria-label='Row Selected null']");
+  private readonly tenderAddRowButton = By.xpath("//button[.//i[contains(@class,'pi-plus-circle')] or contains(normalize-space(),'Add a Row') or contains(normalize-space(),'Adicionar Linha')]");
+  private readonly tenderPackagesSection = By.xpath("//*[normalize-space()='Pacotes FCL' or normalize-space()='FCL Packages']/ancestor::div[contains(@class,'packages-panel-root')][1]");
+  private readonly tenderPackagesRow = By.css("div.packages-fcl-row");
+  private readonly tenderDropdownOption = By.xpath("//li[@role='option' or @data-option-index]");
+  private readonly tenderSearchInputs = By.xpath("//input[@placeholder='Pesquisar' or @placeholder='Search']");
+  private readonly tenderErrorAlert = By.xpath("//div[contains(@class,'MuiAlert-colorError') or @role='alert']");
+  private readonly wizardStepTwoMarker = By.xpath("//*[normalize-space()='Percursos' or normalize-space()='Lanes']");
+  private readonly wizardStepThreeMarker = By.xpath("//*[normalize-space()='Transportadores' or normalize-space()='Carriers']");
+  private readonly wizardStepFourMarker = By.xpath("//*[normalize-space()='Mensagem' or normalize-space()='Message']");
+  private readonly routeSelectionMarker = By.xpath("//*[normalize-space()='Selecionar Rota' or normalize-space()='Select Route' or normalize-space()='Rota *' or normalize-space()='Route *']");
+  private readonly carriersInvitationMarker = By.xpath("//*[normalize-space()='Carriers Invitation' or normalize-space()='Convite a Transportadores' or normalize-space()='Carriers']");
+  private readonly submitMessageMarker = By.xpath("//*[normalize-space()='Submit Message' or normalize-space()='Submeter Mensagem' or normalize-space()='Message']");
+  private readonly tenderMessageTextarea = By.css("textarea");
+  private readonly carrierInvitationCheckboxRoot = By.css("label .MuiCheckbox-root");
   private readonly newTransportTypeButton = By.xpath("//button[.//*[@data-testid='AddCircleOutlineOutlinedIcon']]");
   private readonly saveTransportTypeButton = By.css("button i.pi-save");
   private readonly transportTypeNameInput = By.css("input.MuiInputBase-input[type='text']");
@@ -179,7 +205,7 @@ export class NavigationPage {
       await this.driver.wait(until.elementIsVisible(confirmBtn), 3000);
       await this.clickElement(confirmBtn);
     } catch {
-      // sem diálogo de confirmação — delete imediato
+      // sem diÃ¡logo de confirmaÃ§Ã£o â€” delete imediato
     }
 
     await this.waitAfterSave();
@@ -195,7 +221,7 @@ export class NavigationPage {
     const rows = await this.driver.findElements(By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`));
     for (const row of rows) {
       if (await row.isDisplayed()) {
-        throw new Error(`Mercado "${name}" devia ter sido eliminado mas ainda está visível`);
+        throw new Error(`Mercado "${name}" devia ter sido eliminado mas ainda estÃ¡ visÃ­vel`);
       }
     }
   }
@@ -205,6 +231,111 @@ export class NavigationPage {
     await this.clickMenuItem(this.transportTypesButton);
     await this.driver.wait(until.urlContains("transport-types"), portalConfig.timeoutMs);
     await this.findInteractableElement(this.anyTableRow);
+  }
+
+  public async openSpotTenders(): Promise<void> {
+    await this.openTendersSection();
+    await this.ensureMenuItemInteractable(this.spotTendersButton);
+    await this.clickMenuItem(this.spotTendersButton);
+    await this.driver.wait(until.urlContains("spot-tenders"), portalConfig.timeoutMs);
+    await this.findInteractableElement(this.spotTendersPageTitle);
+  }
+
+  public async openCreateTender(): Promise<void> {
+    await this.openTendersSection();
+    await this.ensureMenuItemInteractable(this.createTenderButton);
+    await this.clickMenuItem(this.createTenderButton);
+    await this.driver.wait(until.urlContains("create-tenders"), portalConfig.timeoutMs);
+    await this.findInteractableElement(this.createTenderFormMarker);
+  }
+
+  public async createSpotTender(
+    name: string,
+    responseDeadline: string,
+    shipmentStartDate: string,
+    shipmentEndDate: string,
+    pickupAddress: string,
+    deliveryAddress: string,
+    deliverTo: string,
+    packageWeight: string = "100",
+    packageQuantity: string = "1"
+  ): Promise<void> {
+    await this.navigateToSpotTenderCarriersStep(
+      name,
+      responseDeadline,
+      shipmentStartDate,
+      shipmentEndDate,
+      pickupAddress,
+      deliveryAddress,
+      deliverTo,
+      packageWeight,
+      packageQuantity
+    );
+
+    await this.selectFirstCarrierInvitation();
+    await this.clickTenderNext(this.submitMessageMarker);
+    await this.fillTenderMessage(`Mensagem automática para o tender ${name}`);
+    await this.clickTenderNext();
+    await this.waitAfterSave();
+
+    await this.openSpotTendersPageDirectly();
+  }
+
+  public async expectSpotTenderVisible(name: string): Promise<void> {
+    await this.findInteractableElement(By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`));
+  }
+
+  public async navigateToSpotTenderCarriersStep(
+    name: string,
+    responseDeadline: string,
+    shipmentStartDate: string,
+    shipmentEndDate: string,
+    pickupAddress: string,
+    deliveryAddress: string,
+    deliverTo: string,
+    packageWeight: string = "100",
+    packageQuantity: string = "1"
+  ): Promise<void> {
+    await this.openCreateTender();
+    await this.completeCreateTenderAndReachCarriersStep(
+      name,
+      responseDeadline,
+      shipmentStartDate,
+      shipmentEndDate,
+      pickupAddress,
+      deliveryAddress,
+      deliverTo,
+      packageWeight,
+      packageQuantity
+    );
+  }
+
+  public async completeCreateTenderAndReachCarriersStep(
+    name: string,
+    responseDeadline: string,
+    shipmentStartDate: string,
+    shipmentEndDate: string,
+    pickupAddress: string,
+    deliveryAddress: string,
+    deliverTo: string,
+    packageWeight: string = "100",
+    packageQuantity: string = "1"
+  ): Promise<void> {
+    await this.fillTenderInformationStep(
+      name,
+      responseDeadline,
+      shipmentStartDate,
+      shipmentEndDate,
+      pickupAddress,
+      deliveryAddress,
+      deliverTo
+    );
+
+    await this.addTenderPackage(packageWeight, packageQuantity);
+    await this.selectTenderMarketAndTransportType();
+
+    await this.clickTenderNext(this.routeSelectionMarker);
+    await this.clickTenderNext(this.carriersInvitationMarker);
   }
 
   public async createTransportType(name: string): Promise<void> {
@@ -270,7 +401,7 @@ export class NavigationPage {
     const rows = await this.driver.findElements(By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`));
     for (const row of rows) {
       if (await row.isDisplayed()) {
-        throw new Error(`Tipo de Transporte "${name}" devia ter sido eliminado mas ainda está visível`);
+        throw new Error(`Tipo de Transporte "${name}" devia ter sido eliminado mas ainda estÃ¡ visÃ­vel`);
       }
     }
   }
@@ -286,11 +417,27 @@ export class NavigationPage {
     await this.clickElement(item);
   }
 
+  private async openTendersSection(): Promise<void> {
+    await this.openSideMenu();
+    if (await this.hasInteractableElement(this.spotTendersButton)) return;
+
+    const section = await this.findInteractableElement(this.tendersSectionButton);
+    await this.clickElement(section);
+    await this.driver.wait(async () => this.hasInteractableElement(this.spotTendersButton), portalConfig.timeoutMs, "Expected Tenders section to expand");
+  }
+
   private async openMarketsPageDirectly(): Promise<void> {
     const baseUrl = (await this.driver.getCurrentUrl()).split("#")[0];
     await this.driver.get(`${baseUrl}#/home/markets`);
     await this.driver.wait(until.urlContains("markets"), portalConfig.timeoutMs);
     await this.expectWesternEuropeVisible();
+  }
+
+  private async openSpotTendersPageDirectly(): Promise<void> {
+    const baseUrl = (await this.driver.getCurrentUrl()).split("#")[0];
+    await this.driver.get(`${baseUrl}#/home/tenders/spot-tenders`);
+    await this.driver.wait(until.urlContains("spot-tenders"), portalConfig.timeoutMs);
+    await this.findInteractableElement(this.spotTendersPageTitle);
   }
 
   private async openTransportTypesPageDirectly(): Promise<void> {
@@ -304,6 +451,389 @@ export class NavigationPage {
     const refreshIcon = await this.findInteractableElement(this.refreshButton);
     await this.clickElement(refreshIcon);
     await this.findInteractableElement(this.anyTableRow);
+  }
+
+  private async clickTenderNext(expectedNextStep?: By): Promise<void> {
+    await this.driver.executeScript("window.scrollTo({ top: 0, behavior: 'instant' });");
+    await this.driver.sleep(250);
+    const clicked = await this.driver.executeScript<boolean>(`
+      const normalize = (value) => (value || "").replace(/\\s+/g, " ").trim().toLowerCase();
+      const buttons = Array.from(document.querySelectorAll("button"));
+      for (const button of buttons) {
+        const text = normalize(button.textContent);
+        if (!text.includes("next") && !text.includes("seguinte")) continue;
+        const rect = button.getBoundingClientRect();
+        const style = window.getComputedStyle(button);
+        if (style.display === "none" || style.visibility === "hidden" || rect.width <= 0 || rect.height <= 0) continue;
+        button.click();
+        return true;
+      }
+      return false;
+    `);
+    if (!clicked) {
+      const nextButton = await this.findInteractableElement(this.nextWizardButton);
+      await this.clickElement(nextButton);
+    }
+    await this.driver.sleep(500);
+    await this.failIfTenderValidationErrorAppears();
+    if (expectedNextStep) {
+      await this.driver.wait(async () => {
+        const elements = await this.driver.findElements(expectedNextStep);
+        for (const element of elements) {
+          if (await element.isDisplayed().catch(() => false)) return true;
+        }
+        return false;
+      }, portalConfig.timeoutMs, "Esperava avançar para a etapa seguinte do wizard");
+    }
+  }
+
+  private async selectFirstTenderRow(): Promise<void> {
+    const checkbox = await this.findInteractableElement(this.tenderRowCheckbox);
+    await this.clickElement(checkbox);
+    await this.driver.sleep(300);
+  }
+
+  private async selectFirstCarrierInvitation(): Promise<void> {
+    await this.dumpCarrierInvitationDebug();
+
+    const clicked = await this.driver.executeScript<boolean>(`
+      const normalize = (value) => (value || "").replace(/\\s+/g, " ").trim().toLowerCase();
+      const isVisible = (element) => {
+        if (!(element instanceof HTMLElement)) return false;
+        const rect = element.getBoundingClientRect();
+        const style = window.getComputedStyle(element);
+        return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+      };
+
+      const section = Array.from(document.querySelectorAll("div")).find((element) => {
+        const text = normalize(element.textContent);
+        return text.includes("convidar transportadoras") || text.includes("carriers invitation");
+      });
+      if (!section) return false;
+
+      const checkboxRoots = Array.from(section.querySelectorAll("span.MuiCheckbox-root, span.MuiButtonBase-root.MuiCheckbox-root"));
+      for (const root of checkboxRoots) {
+        if (!(root instanceof HTMLElement) || !isVisible(root)) continue;
+        const input = root.querySelector("input[type='checkbox']");
+        if (input instanceof HTMLInputElement && input.checked) continue;
+        root.click();
+        return true;
+      }
+
+      return false;
+    `);
+
+    if (!clicked) {
+      throw new Error("Não foi possível selecionar um carrier na etapa Carriers Invitation");
+    }
+
+    await this.driver.sleep(300);
+    await this.driver.wait(
+      async () =>
+        this.driver.executeScript<boolean>(`
+          const normalize = (value) => (value || "").replace(/\\s+/g, " ").trim().toLowerCase();
+          const section = Array.from(document.querySelectorAll("div")).find((element) => {
+            const text = normalize(element.textContent);
+            return text.includes("convidar transportadoras") || text.includes("carriers invitation");
+          });
+          if (!section) return false;
+
+          const roots = Array.from(section.querySelectorAll("span.MuiCheckbox-root, span.MuiButtonBase-root.MuiCheckbox-root"));
+          return roots.some((root) => {
+            if (!(root instanceof HTMLElement)) return false;
+            if (root.className.includes("Mui-checked")) return true;
+            const svg = root.querySelector("svg[data-testid='CheckBoxIcon']");
+            const input = root.querySelector("input[type='checkbox']");
+            return Boolean(svg) || (input instanceof HTMLInputElement && input.checked);
+          });
+        `),
+      portalConfig.timeoutMs,
+      "Esperava selecionar pelo menos um carrier"
+    );
+  }
+
+  private async dumpCarrierInvitationDebug(): Promise<void> {
+    try {
+      const debugFolder = ensureDirectoryExists(path.join(process.cwd(), "reports", "debug"));
+      const timestamp = timestampForFileName();
+
+      const sectionHtml = await this.driver.executeScript<string>(`
+        const normalize = (value) => (value || "").replace(/\\s+/g, " ").trim().toLowerCase();
+        const section = Array.from(document.querySelectorAll("div")).find((element) => {
+          const text = normalize(element.textContent);
+          return text.includes("convidar transportadoras") || text.includes("carriers invitation");
+        });
+        return section?.outerHTML || "";
+      `);
+
+      const pageHtml = await this.driver.executeScript<string>("return document.documentElement.outerHTML;");
+
+      const sectionPath = path.join(debugFolder, `tc020-carriers-section-${timestamp}.html`);
+      const pagePath = path.join(debugFolder, `tc020-carriers-page-${timestamp}.html`);
+      fs.writeFileSync(sectionPath, sectionHtml, "utf8");
+      fs.writeFileSync(pagePath, pageHtml, "utf8");
+      console.log(`[carrier-debug] saved ${sectionPath}`);
+    } catch {
+      // debug dump is best effort only
+    }
+  }
+
+  private async fillTenderMessage(message: string): Promise<void> {
+    const textarea = await this.findInteractableElement(this.tenderMessageTextarea);
+    await this.replaceFormTextInputValue(textarea, message);
+  }
+
+  private async addTenderPackage(weight: string, quantity: string): Promise<void> {
+    await this.driver.executeScript("window.scrollTo({ top: document.body.scrollHeight / 2, behavior: 'instant' });");
+    await this.driver.sleep(250);
+    await this.findInteractableElement(this.tenderPackagesSection);
+    const addRowButton = await this.findInteractableElement(this.tenderAddRowButton);
+    await this.clickElement(addRowButton);
+
+    const row = await this.findInteractableElement(this.tenderPackagesRow);
+    const rowInputs = await row.findElements(By.css("input"));
+    const visibleInputs = await this.filterAndSortVisibleInputs(rowInputs);
+    if (visibleInputs.length < 3) {
+      throw new Error(`Esperava encontrar 3 inputs na linha FCL, mas encontrei ${visibleInputs.length}`);
+    }
+
+    const equipmentCombobox = visibleInputs[0];
+    await this.clickElement(equipmentCombobox);
+
+    const option = await this.findInteractableElement(this.tenderDropdownOption);
+    await this.clickElement(option);
+    await equipmentCombobox.sendKeys(Key.TAB);
+    await this.driver.sleep(300);
+
+    await this.driver.wait(async () => {
+      const currentEquipment = ((await equipmentCombobox.getAttribute("value")) ?? "").trim();
+      return currentEquipment !== "" && currentEquipment !== "1";
+    }, portalConfig.timeoutMs, "Esperava selecionar um equipamento FCL válido");
+
+    const weightInput = visibleInputs[1];
+    await this.replaceFormTextInputValue(weightInput, weight);
+
+    const quantityInput = visibleInputs[2];
+    await this.replaceFormTextInputValue(quantityInput, quantity);
+
+    await this.driver.wait(async () => {
+      const currentWeight = ((await weightInput.getAttribute("value")) ?? "").trim();
+      const currentQuantity = ((await quantityInput.getAttribute("value")) ?? "").trim();
+      return currentWeight === weight && currentQuantity === quantity;
+    }, portalConfig.timeoutMs, "Esperava preencher Peso (KG) e Quantidade no FCL Packages");
+  }
+
+  private async fillTenderInformationStep(
+    name: string,
+    responseDeadline: string,
+    shipmentStartDate: string,
+    shipmentEndDate: string,
+    pickupAddress: string,
+    deliveryAddress: string,
+    deliverTo: string
+  ): Promise<void> {
+    const inputs = await this.findInteractableElements(this.tenderInformationSectionInputs);
+    const topInputs = await this.sortElementsByPosition(inputs);
+    const filtered: WebElement[] = [];
+    for (const input of topInputs) {
+      const placeholder = ((await input.getAttribute("placeholder")) ?? "").trim().toLowerCase();
+      const type = ((await input.getAttribute("type")) ?? "").trim().toLowerCase();
+      const role = ((await input.getAttribute("role")) ?? "").trim().toLowerCase();
+      const value = ((await input.getAttribute("value")) ?? "").trim();
+      if (placeholder === "pesquisar" || placeholder === "search") continue;
+      if (role === "combobox") continue;
+      if (!["text", "date"].includes(type)) continue;
+      if (value === "spot" || value === "fcl") continue;
+      filtered.push(input);
+    }
+
+    if (filtered.length < 7) {
+      throw new Error(`Esperava encontrar 7 inputs principais do concurso, mas encontrei ${filtered.length}`);
+    }
+
+    await this.replaceInputValue(filtered[0], name);
+    await this.replaceDateInputValue(filtered[1], responseDeadline);
+    await this.replaceDateInputValue(filtered[2], shipmentStartDate);
+    await this.replaceDateInputValue(filtered[3], shipmentEndDate);
+    await this.replaceInputValue(filtered[4], pickupAddress);
+    await this.replaceInputValue(filtered[5], deliveryAddress);
+    await this.replaceInputValue(filtered[6], deliverTo);
+  }
+
+  private async selectTenderMarketAndTransportType(): Promise<void> {
+    const searchInputs = await this.findInteractableElements(this.tenderSearchInputs);
+    if (searchInputs.length < 2) {
+      throw new Error("Esperava encontrar os filtros de pesquisa de Mercados e Tipos de Transporte");
+    }
+
+    await this.replaceInputValue(searchInputs[0], "Europe");
+    await this.driver.sleep(300);
+    await this.clickFirstTenderSectionCheckbox("Mercados");
+    await this.driver.sleep(300);
+
+    await this.clickTenderTileCheckbox("Air");
+    await this.driver.sleep(300);
+  }
+
+  private async clickFirstTenderSectionCheckbox(sectionTitle: string): Promise<void> {
+    const clicked = await this.driver.executeScript<boolean>(
+      `
+        const sectionName = arguments[0];
+        const normalize = (value) => (value || "").replace(/\\s+/g, " ").trim().toLowerCase();
+        const isVisible = (element) => {
+          if (!(element instanceof HTMLElement)) return false;
+          const rect = element.getBoundingClientRect();
+          const style = window.getComputedStyle(element);
+          return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+        };
+
+        const sections = Array.from(document.querySelectorAll("div"));
+        const section = sections.find((element) => normalize(element.textContent).includes(normalize(sectionName)));
+        if (!section) return false;
+
+        const checkboxRoots = Array.from(section.querySelectorAll("span.MuiCheckbox-root, span.MuiButtonBase-root.MuiCheckbox-root, input[type='checkbox']"));
+        for (const candidate of checkboxRoots) {
+          if (!isVisible(candidate)) continue;
+          if (candidate instanceof HTMLInputElement) {
+            candidate.click();
+            candidate.dispatchEvent(new Event("input", { bubbles: true }));
+            candidate.dispatchEvent(new Event("change", { bubbles: true }));
+            return true;
+          }
+
+          if (candidate instanceof HTMLElement) {
+            candidate.click();
+            const input = candidate.querySelector("input[type='checkbox']");
+            if (input instanceof HTMLInputElement) {
+              input.dispatchEvent(new Event("input", { bubbles: true }));
+              input.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+            return true;
+          }
+        }
+
+        return false;
+      `,
+      sectionTitle
+    );
+
+    if (!clicked) {
+      throw new Error(`Não foi possível clicar na primeira checkbox da secção "${sectionTitle}"`);
+    }
+  }
+
+  private async clickTenderTileCheckbox(tileText: string): Promise<void> {
+    const clicked = await this.driver.executeScript<boolean>(
+      `
+        const targetText = arguments[0];
+        const normalize = (value) => (value || "").replace(/\\s+/g, " ").trim();
+        const isVisible = (element) => {
+          if (!(element instanceof HTMLElement)) return false;
+          const rect = element.getBoundingClientRect();
+          const style = window.getComputedStyle(element);
+          return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+        };
+
+        const tiles = Array.from(document.querySelectorAll("div.stg-tile, span.stg-tile-label"));
+        for (const tile of tiles) {
+          if (!isVisible(tile)) continue;
+          if (normalize(tile.textContent) !== normalize(targetText)) continue;
+
+          const tileContainer = tile.closest("div.stg-tile") || tile.parentElement;
+          const sibling = tileContainer?.nextElementSibling;
+          const checkbox = sibling?.querySelector?.("input[type='checkbox']");
+          if (checkbox instanceof HTMLInputElement && isVisible(checkbox)) {
+            checkbox.click();
+            checkbox.dispatchEvent(new Event("input", { bubbles: true }));
+            checkbox.dispatchEvent(new Event("change", { bubbles: true }));
+            return true;
+          }
+
+          const checkboxRoot = sibling?.querySelector?.("span.MuiCheckbox-root, span.MuiButtonBase-root.MuiCheckbox-root");
+          if (checkboxRoot instanceof HTMLElement && isVisible(checkboxRoot)) {
+            checkboxRoot.click();
+            return true;
+          }
+        }
+
+        const checkboxes = Array.from(document.querySelectorAll("input[type='checkbox']"));
+        for (const checkbox of checkboxes) {
+          if (!(checkbox instanceof HTMLInputElement) || !isVisible(checkbox)) continue;
+          const cardText = normalize(checkbox.closest("label")?.parentElement?.textContent);
+          if (cardText !== normalize(targetText)) continue;
+          checkbox.click();
+          checkbox.dispatchEvent(new Event("input", { bubbles: true }));
+          checkbox.dispatchEvent(new Event("change", { bubbles: true }));
+          return true;
+        }
+
+        return false;
+      `,
+      tileText
+    );
+
+    if (!clicked) {
+      throw new Error(`NÃ£o foi possÃ­vel clicar na checkbox associada a "${tileText}"`);
+    }
+
+    await this.driver.wait(
+      async () =>
+        this.driver.executeScript<boolean>(
+          `
+            const targetText = arguments[0];
+            const normalize = (value) => (value || "").replace(/\\s+/g, " ").trim();
+            const tiles = Array.from(document.querySelectorAll("div.stg-tile, span.stg-tile-label"));
+            for (const tile of tiles) {
+              if (normalize(tile.textContent) !== normalize(targetText)) continue;
+              const tileContainer = tile.closest("div.stg-tile") || tile.parentElement;
+              const sibling = tileContainer?.nextElementSibling;
+              const checkbox = sibling?.querySelector?.("input[type='checkbox']");
+              if (checkbox instanceof HTMLInputElement) {
+                return checkbox.checked;
+              }
+            }
+
+            const checkboxes = Array.from(document.querySelectorAll("input[type='checkbox']"));
+            for (const checkbox of checkboxes) {
+              if (!(checkbox instanceof HTMLInputElement)) continue;
+              const cardText = normalize(checkbox.closest("label")?.parentElement?.textContent);
+              if (cardText !== normalize(targetText)) continue;
+              return checkbox.checked;
+            }
+
+            return false;
+          `,
+          tileText
+        ),
+      3000,
+      `Esperava selecionar a opÃ§Ã£o "${tileText}"`
+    );
+  }
+
+  private async submitTenderWizard(): Promise<void> {
+    try {
+      const finishButton = await this.findInteractableElement(this.finishTenderButton);
+      await this.clickElement(finishButton);
+    } catch {
+      await this.clickTenderNext();
+    }
+
+    await this.waitAfterSave();
+  }
+
+  private async failIfTenderValidationErrorAppears(): Promise<void> {
+    await this.driver.sleep(300);
+    const alerts = await this.driver.findElements(this.tenderErrorAlert);
+    for (const alert of alerts) {
+      try {
+        if (await alert.isDisplayed()) {
+          const text = ((await alert.getText()) || "").trim();
+          if (text) throw new Error(text);
+        }
+      } catch (error) {
+        if (error instanceof Error && error.message) throw error;
+      }
+    }
   }
 
   private async ensureMenuItemInteractable(locator: By): Promise<void> {
@@ -375,6 +905,43 @@ export class NavigationPage {
     return false;
   }
 
+  private async findInteractableElements(locator: By): Promise<WebElement[]> {
+    await this.driver.wait(until.elementLocated(locator), portalConfig.timeoutMs);
+    const elements = await this.driver.findElements(locator);
+    const interactable: WebElement[] = [];
+    for (const el of elements) {
+      if (await this.isInteractable(el)) interactable.push(el);
+    }
+    if (interactable.length === 0) {
+      throw new Error(`Expected to find interactable elements for ${locator}`);
+    }
+    return interactable;
+  }
+
+  private async sortElementsByPosition(elements: WebElement[]): Promise<WebElement[]> {
+    const withRects = await Promise.all(
+      elements.map(async (element) => ({
+        element,
+        rect: await element.getRect(),
+      }))
+    );
+
+    return withRects
+      .sort((a, b) => {
+        if (Math.abs(a.rect.y - b.rect.y) > 8) return a.rect.y - b.rect.y;
+        return a.rect.x - b.rect.x;
+      })
+      .map((entry) => entry.element);
+  }
+
+  private async filterAndSortVisibleInputs(elements: WebElement[]): Promise<WebElement[]> {
+    const visible: WebElement[] = [];
+    for (const element of elements) {
+      if (await this.isInteractable(element)) visible.push(element);
+    }
+    return this.sortElementsByPosition(visible);
+  }
+
   private async hasVisibleElement(locator: By): Promise<boolean> {
     const elements = await this.driver.findElements(locator);
     for (const el of elements) {
@@ -430,4 +997,101 @@ export class NavigationPage {
       return current === value;
     }, portalConfig.timeoutMs, `Expected input value to be "${value}"`);
   }
+
+  private async replaceFormTextInputValue(input: WebElement, value: string): Promise<void> {
+    await this.clickElement(input);
+    await input.sendKeys(Key.chord(Key.CONTROL, "a"));
+    await input.sendKeys(Key.DELETE);
+    await input.sendKeys(value);
+    await input.sendKeys(Key.TAB);
+
+    await this.driver.executeScript(
+      `
+        const input = arguments[0];
+        const desired = arguments[1];
+        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+        if (setter) setter.call(input, desired);
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+        input.dispatchEvent(new Event("blur", { bubbles: true }));
+      `,
+      input,
+      value
+    );
+
+    await this.driver.wait(async () => {
+      const current = ((await input.getAttribute("value")) ?? "").trim();
+      return current === value;
+    }, portalConfig.timeoutMs, `Expected form input value to be "${value}"`);
+  }
+
+  private async replaceDateInputValue(input: WebElement, value: string): Promise<void> {
+    const typedValue = this.normalizeDateForTyping(value);
+    const expectedDisplay = this.normalizeDateForDisplay(value);
+    const expectedIso = this.normalizeDateForIso(value);
+
+    await this.clickElement(input);
+    await input.sendKeys(Key.chord(Key.CONTROL, "a"));
+    await input.sendKeys(Key.DELETE);
+    await this.driver.wait(async () => {
+      const current = (await input.getAttribute("value")) ?? "";
+      return current === "" || current.includes("aaaa");
+    }, portalConfig.timeoutMs, "Expected date input to be cleared");
+
+    await input.sendKeys(typedValue);
+    await this.driver.wait(async () => {
+      const current = ((await input.getAttribute("value")) ?? "").trim();
+      const normalizedCurrent = current.replace(/\s+/g, "");
+      const expectedCandidates = [expectedDisplay, expectedIso]
+        .filter(Boolean)
+        .map((candidate) => candidate.replace(/\s+/g, ""));
+
+      return expectedCandidates.some((candidate) =>
+        normalizedCurrent === candidate || normalizedCurrent.includes(candidate)
+      );
+    }, portalConfig.timeoutMs, `Expected input value to be "${expectedDisplay}"`);
+  }
+
+  private normalizeDateForTyping(value: string): string {
+    const trimmed = value.trim();
+    const isoMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+    if (isoMatch) {
+      const [, year, month, day] = isoMatch;
+      return `${day}${month}${year}`;
+    }
+
+    const ptMatch = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(trimmed);
+    if (ptMatch) {
+      const [, day, month, year] = ptMatch;
+      return `${day}${month}${year}`;
+    }
+
+    return trimmed.replace(/\D/g, "");
+  }
+
+  private normalizeDateForDisplay(value: string): string {
+    const trimmed = value.trim();
+    const isoMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+    if (isoMatch) {
+      const [, year, month, day] = isoMatch;
+      return `${day}/${month}/${year}`;
+    }
+
+    return trimmed;
+  }
+
+  private normalizeDateForIso(value: string): string {
+    const trimmed = value.trim();
+    const isoMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+    if (isoMatch) return trimmed;
+
+    const ptMatch = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(trimmed);
+    if (ptMatch) {
+      const [, day, month, year] = ptMatch;
+      return `${year}-${month}-${day}`;
+    }
+
+    return trimmed;
+  }
 }
+
