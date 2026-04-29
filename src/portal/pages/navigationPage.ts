@@ -247,14 +247,19 @@ export class NavigationPage {
     await this.openTendersSection();
     await this.ensureMenuItemInteractable(this.createTenderButton);
     await this.clickMenuItem(this.createTenderButton);
-    // Aguarda qualquer elemento do formulário de criação (não depende de URL específica)
-    await this.driver.wait(async () => {
-      const candidates = await this.driver.findElements(this.createTenderFormMarker);
-      for (const el of candidates) {
-        if (await el.isDisplayed().catch(() => false)) return true;
-      }
-      return false;
-    }, portalConfig.timeoutMs, "Esperava que o formulário de criação de concurso abrisse");
+    // Aguarda que pelo menos um input do formulário esteja interactável.
+    // Não usa texto (que aparece também no tab/menu) nem URL (que pode variar).
+    await this.driver.wait(
+      async () => {
+        const inputs = await this.driver.findElements(this.tenderInformationSectionInputs);
+        for (const el of inputs) {
+          if (await el.isDisplayed().catch(() => false)) return true;
+        }
+        return false;
+      },
+      portalConfig.timeoutMs,
+      "Esperava que os inputs do formulário de criação de concurso ficassem visíveis"
+    );
   }
 
   public async createSpotTender(
