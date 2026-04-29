@@ -184,7 +184,10 @@ export async function executeFlow(driver: WebDriver, testCase: TestCase): Promis
         shipmentEndDate,
         pickupAddress,
         deliveryAddress,
-        deliverTo
+        deliverTo,
+        "100",
+        "1",
+        true  // seleciona todos os carriers disponíveis
       );
       await navigation.expectSpotTenderVisible(tenderName);
       await page.logout();

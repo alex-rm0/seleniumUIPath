@@ -272,7 +272,8 @@ export class NavigationPage {
     deliveryAddress: string,
     deliverTo: string,
     packageWeight: string = "100",
-    packageQuantity: string = "1"
+    packageQuantity: string = "1",
+    selectAllCarriers: boolean = false
   ): Promise<void> {
     await this.navigateToSpotTenderCarriersStep(
       name,
@@ -286,7 +287,11 @@ export class NavigationPage {
       packageQuantity
     );
 
-    await this.selectFirstCarrierInvitation();
+    if (selectAllCarriers) {
+      await this.selectAllCarrierInvitations();
+    } else {
+      await this.selectFirstCarrierInvitation();
+    }
     // O marcador mais fiável para a etapa de mensagem é a própria textarea visível
     await this.clickTenderNext(this.tenderMessageTextarea);
     await this.fillTenderMessage(`Mensagem automática para o tender ${name}`);
@@ -713,6 +718,63 @@ export class NavigationPage {
     `);
     if (!anyChecked) {
       throw new Error("Carrier foi clicado mas nenhum checkbox ficou marcado — possível problema com React state");
+    }
+  }
+
+  private async selectAllCarrierInvitations(): Promise<void> {
+    await this.dumpCarrierInvitationDebug();
+
+    // Clica em TODOS os checkboxes disponíveis na secção de transportadoras
+    const totalClicked = await this.driver.executeScript<number>(`
+      const isVisible = (el) => {
+        if (!(el instanceof HTMLElement)) return false;
+        const r = el.getBoundingClientRect(), s = window.getComputedStyle(el);
+        return s.display !== "none" && s.visibility !== "hidden" && r.width > 0 && r.height > 0;
+      };
+
+      // Tenta encontrar a secção de transportadoras pelo título (stg-title ou heading)
+      const titleCandidates = Array.from(document.querySelectorAll(
+        "span.stg-title, h2, h3, h4, legend, div.sectionTitle"
+      ));
+      const titleEl = titleCandidates.find(el =>
+        isVisible(el) && (
+          (el.textContent || "").toLowerCase().includes("transportad") ||
+          (el.textContent || "").toLowerCase().includes("carrier")
+        )
+      );
+      const section = titleEl
+        ? (titleEl.closest("div.stg-container") || titleEl.closest("section") || titleEl.parentElement || document.body)
+        : document.body;
+
+      // Recolhe todos os checkboxes visíveis não selecionados na secção
+      const checkboxes = Array.from((section || document.body).querySelectorAll(
+        "input[type='checkbox']"
+      ));
+      let count = 0;
+      for (const cb of checkboxes) {
+        if (!(cb instanceof HTMLInputElement)) continue;
+        if (!isVisible(cb)) continue;
+        if (cb.checked) continue;
+        cb.click();
+        cb.dispatchEvent(new Event("input",  { bubbles: true }));
+        cb.dispatchEvent(new Event("change", { bubbles: true }));
+        count++;
+      }
+      return count;
+    `);
+
+    await this.driver.sleep(400);
+
+    // Verifica que pelo menos um checkbox ficou selecionado
+    const anyChecked = await this.driver.executeScript<boolean>(`
+      const checkboxes = Array.from(document.querySelectorAll("input[type='checkbox']"));
+      return checkboxes.some(cb => cb instanceof HTMLInputElement && cb.checked);
+    `);
+    if (!anyChecked) {
+      throw new Error(
+        `selectAllCarrierInvitations: clicou ${totalClicked} checkbox(es) mas nenhum ficou marcado — ` +
+        "possível problema com React state ou não há carriers disponíveis"
+      );
     }
   }
 
