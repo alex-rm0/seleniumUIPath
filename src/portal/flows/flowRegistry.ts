@@ -302,8 +302,8 @@ export async function executeFlow(driver: WebDriver, testCase: TestCase): Promis
       await navigation.clickSummaryView();
       await navigation.clickFinishTender();
 
-      // Navega de volta à lista e verifica que o tender está marcado como finalizado
-      await navigation.openSpotTenders();
+      // Após "Terminar Concurso" o portal já está na lista de spot tenders —
+      // basta clicar em "terminados" no menu lateral que já está visível.
       await navigation.clickSpotTendersFinished();
       await navigation.expectTenderIsFinishedInTable(tenderName);
 
