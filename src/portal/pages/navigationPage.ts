@@ -498,38 +498,42 @@ export class NavigationPage {
   }
 
   /**
-   * Selecciona todas as quotes não seleccionadas na tabela activa (coluna "Select quote").
+   * Selecciona todas as quotes não seleccionadas na tabela activa (coluna "Selecionar Cotação" / "Select quote").
    * Usado nas vistas Carriers View e Lanes View.
-   * Seletores: tenders_carriers_view.json / tenders_lanes_view.json → input PrivateSwitchBase-input
+   * Seletores: tenders_carriers_view.json → input[type="checkbox"] (MUI Checkbox, coluna "Select quote")
+   * Nota: os checkboxes podem ter classe PrivateSwitchBase-input ou ser input[type="checkbox"] simples.
    */
   public async selectAllQuotesInTable(): Promise<void> {
-    // Os checkboxes da coluna "Select quote" usam MUI Switch (PrivateSwitchBase-input)
-    // Precisamos clicar nos que ainda não estão marcados
+    // Procura tanto MUI Switch como MUI Checkbox — a coluna "Selecionar Cotação" usa input[type="checkbox"]
     await this.driver.wait(async () => {
       const inputs = await this.driver.findElements(
-        By.css("input.PrivateSwitchBase-input, input[class*='PrivateSwitchBase']")
+        By.css(
+          "input[type='checkbox'], " +
+          "input.PrivateSwitchBase-input, " +
+          "input[class*='PrivateSwitchBase']"
+        )
       );
-      let clicked = 0;
       for (const input of inputs) {
-        if (!(await input.isDisplayed().catch(() => false))) continue;
-        const checked = await input.getAttribute("checked");
-        const isChecked = checked === "true" || checked === "";
-        if (!isChecked) {
-          // Clica no label/span pai (o switch visível), não no input escondido
-          const parent = await this.driver.executeScript(
-            "return arguments[0].closest('.MuiSwitch-root, .MuiCheckbox-root, .MuiFormControlLabel-root') || arguments[0].parentElement;",
-            input
-          ) as ReturnType<typeof this.driver.findElement>;
-          try {
-            await this.driver.executeScript("arguments[0].scrollIntoView({block:'center'});", parent);
-            await this.driver.executeScript("arguments[0].click();", parent);
-            clicked++;
+        try {
+          if (!(await input.isDisplayed().catch(() => false))) continue;
+          // Usa a propriedade JS .checked (mais fiável que getAttribute para checkboxes)
+          const isChecked: boolean = await this.driver.executeScript(
+            "return arguments[0].checked;", input
+          ) as boolean;
+          if (!isChecked) {
+            // Tenta clicar no wrapper MUI; se não existir, clica directamente no input
+            const clickTarget = await this.driver.executeScript(
+              "return arguments[0].closest('.MuiCheckbox-root, .MuiSwitch-root, .MuiFormControlLabel-root') || arguments[0].parentElement || arguments[0];",
+              input
+            ) as ReturnType<typeof this.driver.findElement>;
+            await this.driver.executeScript("arguments[0].scrollIntoView({block:'center'});", clickTarget);
+            await this.driver.executeScript("arguments[0].click();", clickTarget);
             await this.driver.sleep(200);
-          } catch { /* elemento pode ter sido removido do DOM */ }
-        }
+          }
+        } catch { /* elemento removido do DOM após click, continua */ }
       }
       return true;
-    }, portalConfig.timeoutMs, "Could not select quotes");
+    }, portalConfig.timeoutMs, "Could not select quotes in table");
 
     await this.driver.sleep(500);
   }
