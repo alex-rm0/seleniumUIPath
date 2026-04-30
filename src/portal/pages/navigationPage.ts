@@ -449,7 +449,7 @@ export class NavigationPage {
     selectAllCarriers: boolean = false
   ): Promise<void> {
     await this.openCreateTender();
-    await this.setTenderType("Non Spot");
+    await this.setTenderType("Non-Spot");
     await this.completeCreateTenderAndReachCarriersStep(
       name,
       responseDeadline,
