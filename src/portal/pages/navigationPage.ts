@@ -284,10 +284,12 @@ export class NavigationPage {
       until.elementLocated(By.xpath(
         "//div[contains(@class,'mtip__item') and (" +
         "contains(normalize-space(),'Finished') or " +
-        "contains(normalize-space(),'Finalizad'))]"
+        "contains(normalize-space(),'Finalizad') or " +
+        "contains(normalize-space(),'terminado') or " +
+        "contains(normalize-space(),'Terminado'))]"
       )),
       portalConfig.timeoutMs,
-      "Sidebar item 'Spot Tenders Finished / Finalizados' not found"
+      "Sidebar item 'Spot Tenders Finished / terminados' not found"
     );
     await this.driver.wait(until.elementIsVisible(item), portalConfig.timeoutMs);
     await item.click();
