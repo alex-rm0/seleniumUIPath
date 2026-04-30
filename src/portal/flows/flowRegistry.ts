@@ -295,6 +295,7 @@ export async function executeFlow(driver: WebDriver, testCase: TestCase): Promis
       await navigation.openSpotTenders();
       await navigation.rightClickAndViewSpotTender(tenderName);
       await navigation.clickCarriersView();
+      await navigation.selectFirstCarrierInDropdown();
       await navigation.selectAllQuotesInTable();
       await navigation.clickLanesView();
       await navigation.clickSummaryView();

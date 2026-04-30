@@ -385,13 +385,54 @@ export class NavigationPage {
     await this.driver.wait(until.elementIsVisible(btn), portalConfig.timeoutMs);
     await btn.click();
 
-    // Aguarda que a tabela da Carriers View carregue (coluna "Select quote")
+    // Aguarda que o dropdown "Transportador / Carrier" apareça (tabela pode estar vazia até seleccionar carrier)
     await this.driver.wait(
       until.elementLocated(By.xpath(
-        "//th[normalize-space()='Select quote'] | //th[contains(normalize-space(),'Select quote')]"
+        "//input[@role='combobox']"
       )),
       portalConfig.timeoutMs,
-      "Carriers View table did not load (Select quote column not found)"
+      "Carriers View dropdowns did not appear"
+    );
+    await this.driver.sleep(300);
+  }
+
+  /**
+   * Selecciona o primeiro carrier disponível no dropdown "Transportador / Carrier *"
+   * da Vista por Transportadoras. A tabela só mostra dados depois de um carrier estar seleccionado.
+   * Seletores: tenders_carriers_view.json → input[role='combobox'] (1.º = Carrier)
+   */
+  public async selectFirstCarrierInDropdown(): Promise<void> {
+    // O 1.º combobox da página é o "Transportador / Carrier"
+    const carrierInput = await this.driver.wait(
+      until.elementLocated(By.xpath("(//input[@role='combobox'])[1]")),
+      portalConfig.timeoutMs,
+      "Carrier combobox not found in Carriers View"
+    );
+    await this.driver.wait(until.elementIsVisible(carrierInput), portalConfig.timeoutMs);
+    await carrierInput.click();
+
+    // Aguarda as opções do dropdown (listbox)
+    const firstOption = await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//ul[@role='listbox']/li[1] | " +
+        "//*[@role='option'][1]"
+      )),
+      portalConfig.timeoutMs,
+      "No carrier options appeared in dropdown"
+    );
+    await this.driver.wait(until.elementIsVisible(firstOption), portalConfig.timeoutMs);
+    await firstOption.click();
+
+    // Aguarda que a tabela carregue com dados (coluna "Select quote" / "Selecionar Cotação")
+    await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//th[contains(normalize-space(),'Select quote')] | " +
+        "//th[contains(normalize-space(),'Selecionar')] | " +
+        "//label[@aria-label='No quote found for this lane.'] | " +
+        "//input[contains(@class,'PrivateSwitchBase')]"
+      )),
+      portalConfig.timeoutMs,
+      "Carriers View table did not load after selecting carrier"
     );
     await this.driver.sleep(300);
   }
