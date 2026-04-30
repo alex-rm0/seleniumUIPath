@@ -402,11 +402,12 @@ export class NavigationPage {
    * Seletores: tenders_carriers_view.json → input[role='combobox'] (1.º = Carrier)
    */
   public async selectFirstCarrierInDropdown(): Promise<void> {
-    // O 1.º combobox da página é o "Transportador / Carrier"
+    // A Vista por Transportadoras tem 3 dropdowns: Fase | Transportador | Melhor Métrica
+    // O Transportador é o 2.º combobox (Fase pode ter "No options" em spot tenders)
     const carrierInput = await this.driver.wait(
-      until.elementLocated(By.xpath("(//input[@role='combobox'])[1]")),
+      until.elementLocated(By.xpath("(//input[@role='combobox'])[2]")),
       portalConfig.timeoutMs,
-      "Carrier combobox not found in Carriers View"
+      "Carrier/Transportador combobox not found in Carriers View"
     );
     await this.driver.wait(until.elementIsVisible(carrierInput), portalConfig.timeoutMs);
     await carrierInput.click();
