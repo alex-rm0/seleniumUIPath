@@ -450,17 +450,22 @@ export class NavigationPage {
   ): Promise<void> {
     await this.openCreateTender();
     await this.setTenderType("Non-Spot");
-    await this.completeCreateTenderAndReachCarriersStep(
-      name,
-      responseDeadline,
-      shipmentStartDate,
-      shipmentEndDate,
-      pickupAddress,
-      deliveryAddress,
-      deliverTo,
-      packageWeight,
-      packageQuantity
+
+    // Preenche os campos principais (Nome, datas, endereços)
+    await this.fillTenderInformationStep(
+      name, responseDeadline, shipmentStartDate, shipmentEndDate,
+      pickupAddress, deliveryAddress, deliverTo
     );
+
+    // Preenche a secção "New Tender Phase" que aparece apenas para Non-Spot
+    // Seletores: nonspot_create_tender.json → form[.//span 'New Tender Phase']
+    await this.fillNonSpotPhase("Fase 1", shipmentStartDate, shipmentEndDate);
+
+    // Continua o wizard igual ao spot tender
+    await this.addTenderPackage(packageWeight, packageQuantity);
+    await this.selectTenderMarketAndTransportType();
+    await this.clickTenderNext(this.routeSelectionMarker);
+    await this.clickTenderNext(this.carriersInvitationMarker);
 
     if (selectAllCarriers) {
       await this.selectAllCarrierInvitations();
@@ -1115,6 +1120,54 @@ export class NavigationPage {
     await this.driver.wait(until.elementIsVisible(option), portalConfig.timeoutMs);
     await option.click();
     await this.driver.sleep(300);
+  }
+
+  /**
+   * Preenche a secção "New Tender Phase" / "Nova Fase" que aparece no formulário de criação
+   * de concursos Non-Spot depois de seleccionar o tipo.
+   * Seletores: nonspot_create_tender.json → span 'New Tender Phase' + following inputs
+   * Estratégia: usa o eixo following:: a partir do span título para apanhar exactamente
+   * o primeiro text input e os dois primeiros date inputs que lhe seguem na DOM.
+   */
+  private async fillNonSpotPhase(phaseName: string, startDate: string, endDate: string): Promise<void> {
+    // Aguarda que o span "New Tender Phase" / "Nova Fase" apareça (surge após setTenderType)
+    const phaseHeaderLocator = By.xpath(
+      "//span[contains(normalize-space(),'New Tender Phase') or " +
+      "contains(normalize-space(),'Nova Fase') or " +
+      "(contains(normalize-space(),'Phase') and not(ancestor::*[contains(@class,'step') or contains(@class,'wizard')]))]"
+    );
+    await this.driver.wait(
+      until.elementLocated(phaseHeaderLocator),
+      portalConfig.timeoutMs,
+      "New Tender Phase header span not found after selecting Non-Spot type"
+    );
+
+    // Name *: primeiro input[type='text'] a seguir ao span de título da fase
+    const phaseNameInput = await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//span[contains(normalize-space(),'New Tender Phase') or contains(normalize-space(),'Nova Fase') or contains(normalize-space(),'Phase')]" +
+        "/following::input[@type='text'][1]"
+      )),
+      portalConfig.timeoutMs,
+      "Phase Name input not found"
+    );
+    await this.replaceInputValue(phaseNameInput, phaseName);
+
+    // Start Date *: primeiro date input a seguir ao span
+    const phaseStartInput = await this.driver.findElement(By.xpath(
+      "//span[contains(normalize-space(),'New Tender Phase') or contains(normalize-space(),'Nova Fase') or contains(normalize-space(),'Phase')]" +
+      "/following::input[@type='date'][1]"
+    ));
+    await this.replaceDateInputValue(phaseStartInput, startDate);
+
+    // End Date *: segundo date input a seguir ao span
+    const phaseEndInput = await this.driver.findElement(By.xpath(
+      "//span[contains(normalize-space(),'New Tender Phase') or contains(normalize-space(),'Nova Fase') or contains(normalize-space(),'Phase')]" +
+      "/following::input[@type='date'][2]"
+    ));
+    await this.replaceDateInputValue(phaseEndInput, endDate);
+
+    await this.driver.sleep(200);
   }
 
   private async openTransportTypesPageDirectly(): Promise<void> {
