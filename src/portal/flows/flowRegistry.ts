@@ -312,6 +312,95 @@ export async function executeFlow(driver: WebDriver, testCase: TestCase): Promis
       if (!shipperReturned3) throw new Error("Esperava regressar ao login do shipper após logout final");
     }
 
+    // ── TC023: shipper cria concurso faseado → carrier faz bid ──────────────
+    if (flow === "bidNonSpotTenderAsCarrier") {
+      const tenderName = testCase.input.tenderNamePrefix
+        ? `${testCase.input.tenderNamePrefix} ${Date.now()}`
+        : (testCase.input.tenderName ?? `Faseado Auto ${Date.now()}`);
+
+      const responseDeadline  = testCase.input.responseDeadline  ?? "2026-05-20";
+      const shipmentStartDate = testCase.input.shipmentStartDate ?? "2026-05-25";
+      const shipmentEndDate   = testCase.input.shipmentEndDate   ?? "2026-05-30";
+      const pickupAddress     = testCase.input.pickupAddress     ?? "Porto";
+      const deliveryAddress   = testCase.input.deliveryAddress   ?? "Rotterdam";
+      const deliverTo         = testCase.input.deliverTo         ?? "QA Carrier";
+
+      // Parte 1 — shipper: cria concurso faseado e valida na tabela
+      await navigation.createNonSpotTender(
+        tenderName,
+        responseDeadline,
+        shipmentStartDate,
+        shipmentEndDate,
+        pickupAddress,
+        deliveryAddress,
+        deliverTo,
+        "100",
+        "1",
+        true
+      );
+      await navigation.expectNonSpotTenderVisible(tenderName);
+      await page.logout();
+      const shipperReturned1 = await page.isLoginPageVisible();
+      if (!shipperReturned1) throw new Error("Esperava regressar à página de login do shipper após logout");
+
+      // Parte 2 — carrier: valida tender e submete bid
+      const carrierUrl      = testCase.input.carrierUrl;
+      const carrierUsername = testCase.input.carrierUsername;
+      const carrierPassword = testCase.input.carrierPassword;
+
+      if (!carrierUrl || !carrierUsername || !carrierPassword) {
+        throw new Error(
+          `TC "${testCase.id}" usa o flow "bidNonSpotTenderAsCarrier" mas faltam campos: ` +
+          [
+            !carrierUrl      ? "carrierUrl"      : null,
+            !carrierUsername ? "carrierUsername" : null,
+            !carrierPassword ? "carrierPassword" : null,
+          ].filter(Boolean).join(", ")
+        );
+      }
+
+      const bidPrice = testCase.input.bidPrice ?? "150";
+      const bidLoads = testCase.input.bidLoads ?? "1";
+      const bidDays  = testCase.input.bidDays  ?? "5";
+
+      const carrier = new CarrierPage(driver);
+      await carrier.openAndLogin(carrierUrl, carrierUsername, carrierPassword);
+      await carrier.openSideMenu();
+      await carrier.openTendersSectionDropdown();
+      await carrier.navigateToNonSpotTenders();
+      await carrier.clickNonSpotTendersInQuotation();
+      await carrier.expectNonSpotTenderVisible(tenderName);
+      await carrier.rightClickAndViewTender(tenderName);
+      await carrier.clickOfertaButton();
+      await carrier.fillBidTable(bidPrice, bidLoads, bidDays);
+      await carrier.submitBid();
+      await carrier.logout();
+      const carrierReturned = await carrier.isLoginPageVisible();
+      if (!carrierReturned) throw new Error("Esperava regressar ao login do carrier após logout");
+
+      // Parte 3 — shipper: aceita quotes e fecha o concurso faseado
+      await page.open();
+      await page.login(testCase.input.username, testCase.input.password);
+      await page.getSuccessMessage();
+
+      await navigation.openNonSpotTenders();
+      await navigation.clickNonSpotTendersInQuotation();
+      await navigation.rightClickAndViewSpotTender(tenderName);
+      await navigation.clickCarriersView();
+      await navigation.selectFirstCarrierInDropdown();
+      await navigation.selectAllQuotesInTable();
+      await navigation.clickLanesView();
+      await navigation.clickSummaryView();
+      await navigation.clickFinishTender();
+
+      await navigation.clickNonSpotTendersFinished();
+      await navigation.expectTenderIsFinishedInTable(tenderName);
+
+      await page.logout();
+      const shipperReturned3 = await page.isLoginPageVisible();
+      if (!shipperReturned3) throw new Error("Esperava regressar ao login do shipper após logout final");
+    }
+
   } else {
     actualMessage = testCase.expected.expectedAlertType === "error"
       ? await page.getErrorMessage()

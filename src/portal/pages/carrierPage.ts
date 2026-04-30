@@ -41,6 +41,14 @@ export class CarrierPage {
     "]"
   );
 
+  private readonly concursosFaseadosButton = By.xpath(
+    "//div[@role='button'][" +
+      "@aria-label='Concursos Faseados' or " +
+      "@aria-label='Non-Spot Tenders' or " +
+      ".//span[normalize-space()='Concursos Faseados' or normalize-space()='Non-Spot Tenders']" +
+    "]"
+  );
+
   // Logout: no carrier é um button directo com aria-label (não está dentro de um dropdown)
   private readonly logoutButton = By.css('button[aria-label="Terminar Sessão"]');
 
@@ -180,6 +188,73 @@ export class CarrierPage {
       until.elementLocated(By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`)),
       portalConfig.timeoutMs,
       `Expected tender "${name}" to appear in the carrier spot tenders table`
+    );
+  }
+
+  // ─── Non-Spot (Concursos Faseados) — TC023 ────────────────────────────────
+
+  /**
+   * Navega para a secção de Concursos Faseados no portal do carrier.
+   * URL: #/carrier/home/tenders/non-spot-tenders
+   * Seletores: nonspot_carrier_invited.json → div[aria-label="Concursos Faseados"]
+   */
+  public async navigateToNonSpotTenders(): Promise<void> {
+    await this.openTendersSectionDropdown();
+
+    const btn = await this.driver.wait(
+      until.elementLocated(this.concursosFaseadosButton),
+      portalConfig.timeoutMs,
+      "Carrier Concursos Faseados button not found"
+    );
+    await this.driver.wait(until.elementIsVisible(btn), portalConfig.timeoutMs);
+    await this.driver.executeScript("arguments[0].scrollIntoView({block:'center'});", btn);
+    try { await btn.click(); } catch { await this.driver.executeScript("arguments[0].click();", btn); }
+
+    await this.driver.sleep(500);
+
+    await this.driver.wait(async () => {
+      const url = await this.driver.getCurrentUrl();
+      if (url.includes("non-spot-tenders") || url.includes("nonSpotTenders")) return true;
+      const rows  = await this.driver.findElements(By.css("tr[role='row']"));
+      const title = await this.driver.findElements(
+        By.xpath("//*[normalize-space()='Concursos Faseados' or normalize-space()='Non-Spot Tenders']")
+      );
+      const rOk = await Promise.all(rows.map( (e) => e.isDisplayed().catch(() => false)));
+      const tOk = await Promise.all(title.map((e) => e.isDisplayed().catch(() => false)));
+      return rOk.some(Boolean) || tOk.some(Boolean);
+    }, portalConfig.timeoutMs, "Carrier Non-Spot Tenders page did not load");
+  }
+
+  /**
+   * Clica no item "Concursos Faseados em Cotação" no menu lateral do carrier.
+   * Seletores: nonspot_carrier_quotation.json → div.mtip__item "Concursos Faseados em Cotação"
+   */
+  public async clickNonSpotTendersInQuotation(): Promise<void> {
+    const item = await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//div[contains(@class,'mtip__item') and " +
+        "contains(normalize-space(),'Faseado') and " +
+        "contains(normalize-space(),'em Cotação')]"
+      )),
+      portalConfig.timeoutMs,
+      "Carrier sidebar item 'Concursos Faseados em Cotação' not found"
+    );
+    await this.driver.wait(until.elementIsVisible(item), portalConfig.timeoutMs);
+    await item.click();
+
+    await this.driver.wait(
+      until.elementLocated(By.xpath("//tr[@role='row'] | //td[contains(@class,'p-datatable')]")),
+      portalConfig.timeoutMs,
+      "Non-Spot Tenders in Quotation table did not load on carrier side"
+    );
+    await this.driver.sleep(300);
+  }
+
+  public async expectNonSpotTenderVisible(name: string): Promise<void> {
+    await this.driver.wait(
+      until.elementLocated(By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`)),
+      portalConfig.timeoutMs,
+      `Expected tender "${name}" to appear in the carrier non-spot tenders table`
     );
   }
 

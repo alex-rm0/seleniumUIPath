@@ -28,8 +28,10 @@ export class NavigationPage {
   private readonly transportTypesButton = By.xpath("//div[@role='button'][.//span[contains(normalize-space(),'Tipos de Transporte')]]");
   private readonly tendersSectionButton = By.xpath("//div[@role='button'][.//span[normalize-space()='Tenders' or contains(normalize-space(),'Concursos') or contains(normalize-space(),'Concurs')]]");
   private readonly spotTendersButton = By.xpath("//div[@role='button'][@aria-label='Spot Tenders' or @aria-label='Concursos Diretos' or @aria-label='Concursos Inmediatos' or .//span[normalize-space()='Spot Tenders']]");
+  private readonly nonSpotTendersButton = By.xpath("//div[@role='button'][@aria-label='Concursos Faseados' or @aria-label='Non-Spot Tenders' or .//span[normalize-space()='Concursos Faseados' or normalize-space()='Non-Spot Tenders']]");
   private readonly createTenderButton = By.xpath("//div[@aria-label='Criar Concurso' or @aria-label='Create Tender' or @aria-label='Crear Licitación' or @aria-label='Crear Concurso']");
   private readonly spotTendersPageTitle = By.xpath("//*[normalize-space()='Spot Tenders' or normalize-space()='Concursos Diretos' or normalize-space()='Concursos Inmediatos']");
+  private readonly nonSpotTendersPageTitle = By.xpath("//*[normalize-space()='Concursos Faseados' or normalize-space()='Non-Spot Tenders']");
   private readonly createTenderFormMarker = By.xpath("//*[normalize-space()='Create Tender' or normalize-space()='Criar Concurso' or normalize-space()='Tender Information' or normalize-space()='InformaÃ§Ãµes do Concurso' or normalize-space()='Pickup Address' or normalize-space()='EndereÃ§o de recolha' or normalize-space()='Delivery Address' or normalize-space()='EndereÃ§o de Entrega' or normalize-space()='Deliver To' or normalize-space()='Entregar a']");
   private readonly tenderInformationSectionInputs = By.xpath("//*[contains(normalize-space(),'Concurso') or contains(normalize-space(),'Tender Information')]/ancestor::*[self::div or self::section][1]//input");
   private readonly nextWizardButton = By.xpath("//button[.//i[contains(@class,'pi-arrow-right')] or contains(normalize-space(),'Next') or contains(normalize-space(),'Seguinte')]");
@@ -305,6 +307,64 @@ export class NavigationPage {
     await this.driver.sleep(300);
   }
 
+  public async openNonSpotTenders(): Promise<void> {
+    await this.openTendersSection();
+    await this.ensureMenuItemInteractable(this.nonSpotTendersButton);
+    await this.clickMenuItem(this.nonSpotTendersButton);
+    await this.driver.wait(until.urlContains("non-spot-tenders"), portalConfig.timeoutMs);
+    await this.findInteractableElement(this.nonSpotTendersPageTitle);
+  }
+
+  /**
+   * Clica no item "Concursos Faseados em Cotação" no menu lateral da página de Non-Spot Tenders.
+   * Seletores: nonspot_quotation.json → div.mtip__item "Concursos Faseados em Cotação"
+   */
+  public async clickNonSpotTendersInQuotation(): Promise<void> {
+    const item = await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//div[contains(@class,'mtip__item') and " +
+        "contains(normalize-space(),'Faseado') and " +
+        "contains(normalize-space(),'em Cotação')]"
+      )),
+      portalConfig.timeoutMs,
+      "Sidebar item 'Concursos Faseados em Cotação' not found"
+    );
+    await this.driver.wait(until.elementIsVisible(item), portalConfig.timeoutMs);
+    await item.click();
+
+    await this.driver.wait(
+      until.elementLocated(By.xpath("//tr[@role='row'] | //td[contains(@class,'p-datatable')]")),
+      portalConfig.timeoutMs,
+      "Non-Spot Tenders in Quotation table did not load"
+    );
+    await this.driver.sleep(300);
+  }
+
+  /**
+   * Clica no item "Concursos Faseados terminados" no menu lateral da página de Non-Spot Tenders.
+   * Seletores: nonspot_finished.json → div.mtip__item "Concursos Faseados terminados"
+   */
+  public async clickNonSpotTendersFinished(): Promise<void> {
+    const item = await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//div[contains(@class,'mtip__item') and " +
+        "contains(normalize-space(),'Faseado') and " +
+        "(contains(normalize-space(),'terminado') or contains(normalize-space(),'Finished') or contains(normalize-space(),'Finalizad'))]"
+      )),
+      portalConfig.timeoutMs,
+      "Sidebar item 'Concursos Faseados terminados' not found"
+    );
+    await this.driver.wait(until.elementIsVisible(item), portalConfig.timeoutMs);
+    await item.click();
+
+    await this.driver.wait(
+      until.elementLocated(By.xpath("//tr[@role='row'] | //td[contains(@class,'p-datatable')]")),
+      portalConfig.timeoutMs,
+      "Non-Spot Tenders Finished table did not load"
+    );
+    await this.driver.sleep(300);
+  }
+
   public async openCreateTender(): Promise<void> {
     await this.openTendersSection();
     await this.ensureMenuItemInteractable(this.createTenderButton);
@@ -365,6 +425,58 @@ export class NavigationPage {
   }
 
   public async expectSpotTenderVisible(name: string): Promise<void> {
+    await this.findInteractableElement(By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`));
+  }
+
+  // ─── Fluxo Non-Spot (Concursos Faseados) — TC023 ────────────────────────────
+
+  /**
+   * Cria um concurso faseado (non-spot) e termina na lista de concursos faseados.
+   * Idêntico a createSpotTender() mas define "Tipo de Concurso" = "Faseado"
+   * antes de preencher o formulário.
+   * Seletores base: nonspot_config.json, tenders-create.json
+   */
+  public async createNonSpotTender(
+    name: string,
+    responseDeadline: string,
+    shipmentStartDate: string,
+    shipmentEndDate: string,
+    pickupAddress: string,
+    deliveryAddress: string,
+    deliverTo: string,
+    packageWeight: string = "100",
+    packageQuantity: string = "1",
+    selectAllCarriers: boolean = false
+  ): Promise<void> {
+    await this.openCreateTender();
+    await this.setTenderType("Faseado");
+    await this.completeCreateTenderAndReachCarriersStep(
+      name,
+      responseDeadline,
+      shipmentStartDate,
+      shipmentEndDate,
+      pickupAddress,
+      deliveryAddress,
+      deliverTo,
+      packageWeight,
+      packageQuantity
+    );
+
+    if (selectAllCarriers) {
+      await this.selectAllCarrierInvitations();
+    } else {
+      await this.selectFirstCarrierInvitation();
+    }
+    await this.clickTenderNext(this.tenderMessageTextarea);
+    await this.fillTenderMessage(`Mensagem automática para o tender ${name}`);
+    const enviarBtn = await this.findInteractableElement(this.tenderEnviarButton);
+    await this.clickElement(enviarBtn);
+    await this.waitAfterSave();
+
+    await this.openNonSpotTendersPageDirectly();
+  }
+
+  public async expectNonSpotTenderVisible(name: string): Promise<void> {
     await this.findInteractableElement(By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`));
   }
 
@@ -949,6 +1061,60 @@ export class NavigationPage {
     await this.driver.get(`${baseUrl}#/home/tenders/spot-tenders`);
     await this.driver.wait(until.urlContains("spot-tenders"), portalConfig.timeoutMs);
     await this.findInteractableElement(this.spotTendersPageTitle);
+  }
+
+  private async openNonSpotTendersPageDirectly(): Promise<void> {
+    const baseUrl = (await this.driver.getCurrentUrl()).split("#")[0];
+    await this.driver.get(`${baseUrl}#/home/tenders/non-spot-tenders`);
+    await this.driver.wait(until.urlContains("non-spot-tenders"), portalConfig.timeoutMs);
+    await this.findInteractableElement(this.nonSpotTendersPageTitle);
+  }
+
+  /**
+   * Selecciona o tipo de concurso (ex: "Faseado", "Spot") no combobox "Tipo de Concurso *"
+   * do formulário de criação de concurso.
+   * Seletores: tenders-create.json → input[role='combobox'] label "Tipo de Concurso *"
+   * Usado por createNonSpotTender() para mudar o tipo default de "Spot" para "Faseado".
+   */
+  private async setTenderType(type: string): Promise<void> {
+    const tipoInput = await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//div[.//label[contains(normalize-space(),'Tipo de Concurso')]]//input[@role='combobox']"
+      )),
+      portalConfig.timeoutMs,
+      "Tipo de Concurso combobox not found in create tender form"
+    );
+    await this.driver.wait(until.elementIsVisible(tipoInput), portalConfig.timeoutMs);
+
+    // Verifica se o valor já está correcto
+    const currentValue = ((await tipoInput.getAttribute("value")) ?? "").trim().toLowerCase();
+    if (currentValue === type.toLowerCase()) return;
+
+    // Abre o dropdown e escreve o tipo
+    await tipoInput.click();
+    await this.driver.sleep(200);
+
+    // Limpa e escreve o novo valor via JS para garantir que o React regista a mudança
+    await this.driver.executeScript(`
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+      if (setter) setter.call(arguments[0], '');
+      arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
+    `, tipoInput);
+    await tipoInput.sendKeys(type);
+    await this.driver.sleep(400);
+
+    // Clica na primeira opção que contenha o tipo
+    const option = await this.driver.wait(
+      until.elementLocated(By.xpath(
+        `//li[@role='option'][contains(normalize-space(),'${type}')] | ` +
+        `//*[@role='option'][contains(normalize-space(),'${type}')]`
+      )),
+      portalConfig.timeoutMs,
+      `Dropdown option "${type}" not found in Tipo de Concurso`
+    );
+    await this.driver.wait(until.elementIsVisible(option), portalConfig.timeoutMs);
+    await option.click();
+    await this.driver.sleep(300);
   }
 
   private async openTransportTypesPageDirectly(): Promise<void> {
