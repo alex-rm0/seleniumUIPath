@@ -492,6 +492,51 @@ export class NavigationPage {
     await this.findInteractableElement(By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`));
   }
 
+  /**
+   * Clica com o botão direito no tender Non-Spot da tabela e clica em "Ver" / "View".
+   * Ao contrário do spot, o "Ver" do non-spot abre directamente a página de detalhe
+   * com os botões "Vista por Transportadoras" e "Lanes View" — sem navegação manual por hash.
+   * Seletores: nonspot_quotation.json → tr[@role='row'] → context menu "Ver/View"
+   */
+  public async rightClickAndViewNonSpotTender(name: string): Promise<void> {
+    const rowLocator = By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`);
+    const row = await this.driver.wait(
+      until.elementLocated(rowLocator),
+      portalConfig.timeoutMs,
+      `Non-Spot tender row "${name}" not found for right-click`
+    );
+    await this.driver.wait(until.elementIsVisible(row), portalConfig.timeoutMs);
+
+    const actions = this.driver.actions({ async: true });
+    await actions.contextClick(row).perform();
+
+    const viewItemLocator = By.xpath(
+      "//*[@role='menuitem' or contains(@class,'context-menu') or contains(@class,'p-menuitem')]" +
+      "[contains(normalize-space(),'Ver') or contains(normalize-space(),'View')]"
+    );
+    const viewItem = await this.driver.wait(
+      until.elementLocated(viewItemLocator),
+      portalConfig.timeoutMs,
+      "Context menu 'Ver/View' option did not appear"
+    );
+    await this.driver.wait(until.elementIsVisible(viewItem), portalConfig.timeoutMs);
+    await viewItem.click();
+    await this.driver.sleep(800);
+
+    // Para non-spot, o "Ver" já carrega a página de detalhe com os botões de vista
+    await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//button[contains(normalize-space(),'Vista por Transportadoras') or " +
+        "contains(normalize-space(),'Carriers View') or " +
+        "contains(normalize-space(),'Carriers') or " +
+        "contains(normalize-space(),'Lanes')]"
+      )),
+      portalConfig.timeoutMs,
+      "Non-Spot tender detail view did not load after clicking 'Ver' — Carriers/Lanes buttons not found"
+    );
+    await this.driver.sleep(300);
+  }
+
   // ─── Fluxo de aceitação de quotes e fecho de tender (TC022 Parte 3) ────────
 
   /**

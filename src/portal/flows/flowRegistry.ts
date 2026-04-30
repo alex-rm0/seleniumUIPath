@@ -368,8 +368,10 @@ export async function executeFlow(driver: WebDriver, testCase: TestCase): Promis
       await carrier.openSideMenu();
       await carrier.openTendersSectionDropdown();
       await carrier.navigateToNonSpotTenders();
-      await carrier.clickNonSpotTendersInQuotation();
-      await carrier.expectNonSpotTenderVisible(tenderName);
+      // Vai para "Concursos Faseados Convidados", pesquisa o tender e selecciona-o
+      await carrier.clickNonSpotTendersInvited();
+      await carrier.searchAndSelectNonSpotTender(tenderName);
+      // Tender aparece na tabela → botão direito + view → bid
       await carrier.rightClickAndViewTender(tenderName);
       await carrier.clickOfertaButton();
       await carrier.fillBidTable(bidPrice, bidLoads, bidDays);
@@ -385,7 +387,7 @@ export async function executeFlow(driver: WebDriver, testCase: TestCase): Promis
 
       await navigation.openNonSpotTenders();
       await navigation.clickNonSpotTendersInQuotation();
-      await navigation.rightClickAndViewSpotTender(tenderName);
+      await navigation.rightClickAndViewNonSpotTender(tenderName);
       await navigation.clickCarriersView();
       await navigation.selectFirstCarrierInDropdown();
       await navigation.selectAllQuotesInTable();

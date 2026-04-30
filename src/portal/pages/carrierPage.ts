@@ -226,6 +226,78 @@ export class CarrierPage {
   }
 
   /**
+   * Clica no item "Concursos Faseados Convidados" no menu lateral do carrier.
+   * Seletores: nonspot_carrier_invited.json → span 'Concursos Faseados Convidados'
+   */
+  public async clickNonSpotTendersInvited(): Promise<void> {
+    const item = await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//*[contains(normalize-space(),'Concursos Faseados Convidados')]" +
+        "[self::div or self::span or self::a or self::li]"
+      )),
+      portalConfig.timeoutMs,
+      "Carrier sidebar item 'Concursos Faseados Convidados' not found"
+    );
+    await this.driver.wait(until.elementIsVisible(item), portalConfig.timeoutMs);
+    await item.click();
+
+    // Aguarda o campo de pesquisa "Selecionar Concurso" ficar visível
+    await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//*[contains(normalize-space(),'Selecionar Concurso')]"
+      )),
+      portalConfig.timeoutMs,
+      "Invited Non-Spot Tenders page did not load (Selecionar Concurso not found)"
+    );
+    await this.driver.sleep(300);
+  }
+
+  /**
+   * Pesquisa o tender na caixa "Selecionar Concurso" (autocomplete/dropdown)
+   * e selecciona-o na lista que aparece.
+   * Seletores: nonspot_carrier_invited.json → input[placeholder='Selecionar Concurso']
+   * Após selecção o tender aparece na tabela de registos.
+   */
+  public async searchAndSelectNonSpotTender(name: string): Promise<void> {
+    // Encontra o input do autocomplete (placeholder "Selecionar Concurso")
+    const searchInput = await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//input[@placeholder='Selecionar Concurso' or @placeholder='Select Tender']" +
+        " | //*[contains(normalize-space(),'Selecionar Concurso')]/following::input[1]"
+      )),
+      portalConfig.timeoutMs,
+      "Search input 'Selecionar Concurso' not found on invited tenders page"
+    );
+    await this.driver.wait(until.elementIsVisible(searchInput), portalConfig.timeoutMs);
+
+    // Limpa e escreve o nome do tender para filtrar o dropdown
+    await searchInput.clear();
+    await searchInput.sendKeys(name);
+    await this.driver.sleep(500); // aguarda autocomplete
+
+    // Selecciona a primeira opção do dropdown que contenha o nome
+    const dropdownOption = await this.driver.wait(
+      until.elementLocated(By.xpath(
+        `//*[contains(@class,'p-autocomplete-item') or contains(@class,'dropdown-item') or ` +
+        `contains(@class,'suggestion') or @role='option'][contains(normalize-space(),'${name}')]` +
+        ` | //li[contains(normalize-space(),'${name}')]`
+      )),
+      portalConfig.timeoutMs,
+      `Dropdown option for tender "${name}" did not appear`
+    );
+    await this.driver.wait(until.elementIsVisible(dropdownOption), portalConfig.timeoutMs);
+    await dropdownOption.click();
+    await this.driver.sleep(400);
+
+    // Confirma que o tender aparece na tabela
+    await this.driver.wait(
+      until.elementLocated(By.xpath(`//tr[@role='row'][.//td[normalize-space()='${name}']]`)),
+      portalConfig.timeoutMs,
+      `Tender "${name}" did not appear in table after search selection`
+    );
+  }
+
+  /**
    * Clica no item "Concursos Faseados em Cotação" no menu lateral do carrier.
    * Seletores: nonspot_carrier_quotation.json → div.mtip__item "Concursos Faseados em Cotação"
    */
