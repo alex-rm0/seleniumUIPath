@@ -244,6 +244,65 @@ export class NavigationPage {
     await this.findInteractableElement(this.spotTendersPageTitle);
   }
 
+  /**
+   * Clica no item "Concursos Diretos em Cotação" / "Spot Tenders in Quotation"
+   * no menu lateral esquerdo da página de Spot Tenders.
+   * Seletores: tender_spot_em_cotacao.json → div.mtip__item "Concursos Diretos em Cotação"
+   */
+  public async clickSpotTendersInQuotation(): Promise<void> {
+    const item = await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//div[contains(@class,'mtip__item') and (" +
+        "contains(normalize-space(),'em Cotação') or " +
+        "contains(normalize-space(),'in Quotation') or " +
+        "contains(normalize-space(),'In Quotation'))]"
+      )),
+      portalConfig.timeoutMs,
+      "Sidebar item 'Spot Tenders in Quotation / em Cotação' not found"
+    );
+    await this.driver.wait(until.elementIsVisible(item), portalConfig.timeoutMs);
+    await item.click();
+
+    // Aguarda que a tabela de tenders em cotação apareça
+    await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//tr[@role='row'] | //td[contains(@class,'p-datatable')]"
+      )),
+      portalConfig.timeoutMs,
+      "Spot Tenders in Quotation table did not load"
+    );
+    await this.driver.sleep(300);
+  }
+
+  /**
+   * Clica no item "Spot Tenders Finished / Concursos Diretos Finalizados"
+   * no menu lateral esquerdo da página de Spot Tenders.
+   * Seletores: spot_tenders_finished.json → div.mtip__item "Spot Tenders Finished"
+   */
+  public async clickSpotTendersFinished(): Promise<void> {
+    const item = await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//div[contains(@class,'mtip__item') and (" +
+        "contains(normalize-space(),'Finished') or " +
+        "contains(normalize-space(),'Finalizad'))]"
+      )),
+      portalConfig.timeoutMs,
+      "Sidebar item 'Spot Tenders Finished / Finalizados' not found"
+    );
+    await this.driver.wait(until.elementIsVisible(item), portalConfig.timeoutMs);
+    await item.click();
+
+    // Aguarda que a tabela de tenders finalizados apareça
+    await this.driver.wait(
+      until.elementLocated(By.xpath(
+        "//tr[@role='row'] | //td[contains(@class,'p-datatable')]"
+      )),
+      portalConfig.timeoutMs,
+      "Spot Tenders Finished table did not load"
+    );
+    await this.driver.sleep(300);
+  }
+
   public async openCreateTender(): Promise<void> {
     await this.openTendersSection();
     await this.ensureMenuItemInteractable(this.createTenderButton);

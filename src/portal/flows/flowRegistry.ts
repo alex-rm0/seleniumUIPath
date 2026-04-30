@@ -293,6 +293,7 @@ export async function executeFlow(driver: WebDriver, testCase: TestCase): Promis
       await page.getSuccessMessage();
 
       await navigation.openSpotTenders();
+      await navigation.clickSpotTendersInQuotation();
       await navigation.rightClickAndViewSpotTender(tenderName);
       await navigation.clickCarriersView();
       await navigation.selectFirstCarrierInDropdown();
@@ -303,6 +304,7 @@ export async function executeFlow(driver: WebDriver, testCase: TestCase): Promis
 
       // Navega de volta à lista e verifica que o tender está marcado como finalizado
       await navigation.openSpotTenders();
+      await navigation.clickSpotTendersFinished();
       await navigation.expectTenderIsFinishedInTable(tenderName);
 
       await page.logout();
