@@ -342,10 +342,12 @@ export class NavigationPage {
     await this.driver.sleep(800);
 
     // O "Ver" abre a ficha de detalhes (não o TenderInQuotation directamente).
-    // Depois de seleccionar o tender, navegamos para TenderInQuotation — o React
-    // mantém o tender activo no estado da app e mostra a página correcta.
-    const baseUrl = (await this.driver.getCurrentUrl()).split("#")[0];
-    await this.driver.get(`${baseUrl}#/home/tenders/TenderInQuotation`);
+    // Usamos window.location.hash (sem reload) para o React Router navegar para
+    // TenderInQuotation mantendo o estado do tender activo na memória da app.
+    // driver.get() causaria um reload completo que limpa o estado React.
+    await this.driver.executeScript(
+      `window.location.hash = '/home/tenders/TenderInQuotation';`
+    );
 
     await this.driver.wait(
       async () => (await this.driver.getCurrentUrl()).includes("TenderInQuotation"),
