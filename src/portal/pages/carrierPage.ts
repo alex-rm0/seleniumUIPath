@@ -230,25 +230,37 @@ export class CarrierPage {
    * Seletores: nonspot_carrier_invited.json → span 'Concursos Faseados Convidados'
    */
   public async clickNonSpotTendersInvited(): Promise<void> {
+    // Usa exact match para evitar apanhar o container pai que agrega o texto de todos os sub-itens
+    const itemLocator = By.xpath(
+      "//*[normalize-space()='Concursos Faseados Convidados']" +
+      "[not(.//*[normalize-space()='Concursos Faseados em Cotação'])]"
+    );
     const item = await this.driver.wait(
-      until.elementLocated(By.xpath(
-        "//*[contains(normalize-space(),'Concursos Faseados Convidados')]" +
-        "[self::div or self::span or self::a or self::li]"
-      )),
+      until.elementLocated(itemLocator),
       portalConfig.timeoutMs,
       "Carrier sidebar item 'Concursos Faseados Convidados' not found"
     );
     await this.driver.wait(until.elementIsVisible(item), portalConfig.timeoutMs);
+    await this.driver.executeScript("arguments[0].scrollIntoView({block:'center'});", item);
     await item.click();
+    await this.driver.sleep(500);
 
-    // Aguarda o campo de pesquisa "Selecionar Concurso" ficar visível
-    await this.driver.wait(
-      until.elementLocated(By.xpath(
-        "//*[contains(normalize-space(),'Selecionar Concurso')]"
-      )),
-      portalConfig.timeoutMs,
-      "Invited Non-Spot Tenders page did not load (Selecionar Concurso not found)"
-    );
+    // Confirma que a tab activa mudou — o item "Convidados" deve estar seleccionado.
+    // Verifica que pelo menos o campo de pesquisa existe e que a URL não aponta para "finished"
+    await this.driver.wait(async () => {
+      const url = await this.driver.getCurrentUrl();
+      // Se a URL já distingue as tabs, verifica que não é a de Finalizados
+      if (url.includes("finished") || url.includes("finaliz")) return false;
+      // Aguarda o input do autocomplete "Selecionar Concurso" estar visível
+      const inputs = await this.driver.findElements(By.xpath(
+        "//input[@placeholder='Selecionar Concurso' or @placeholder='Select Tender']" +
+        " | //*[contains(normalize-space(),'Selecionar Concurso')]/following::input[1]"
+      ));
+      for (const inp of inputs) {
+        if (await inp.isDisplayed().catch(() => false)) return true;
+      }
+      return false;
+    }, portalConfig.timeoutMs, "Invited Non-Spot Tenders page did not load after clicking 'Convidados'");
     await this.driver.sleep(300);
   }
 
