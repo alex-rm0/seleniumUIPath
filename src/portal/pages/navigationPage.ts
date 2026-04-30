@@ -457,9 +457,16 @@ export class NavigationPage {
       pickupAddress, deliveryAddress, deliverTo
     );
 
-    // Preenche a secção "New Tender Phase" que aparece apenas para Non-Spot
-    // Seletores: nonspot_create_tender.json → form[.//span 'New Tender Phase']
-    await this.fillNonSpotPhase("Fase 1", shipmentStartDate, shipmentEndDate);
+    // Preenche a secção "New Tender Phase" que aparece apenas para Non-Spot.
+    // A data de fim da fase deve ser ≤ responseDeadline (regra do portal).
+    // Fase: [responseDeadline - 5 dias] → [responseDeadline]
+    const phaseEndDate = responseDeadline;
+    const phaseStartDate = (() => {
+      const d = new Date(responseDeadline);
+      d.setDate(d.getDate() - 5);
+      return d.toISOString().split("T")[0];
+    })();
+    await this.fillNonSpotPhase("Fase 1", phaseStartDate, phaseEndDate);
 
     // Continua o wizard igual ao spot tender
     await this.addTenderPackage(packageWeight, packageQuantity);
