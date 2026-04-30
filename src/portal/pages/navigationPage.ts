@@ -458,13 +458,16 @@ export class NavigationPage {
   /**
    * Selecciona o primeiro carrier disponível no dropdown "Transportador / Carrier *"
    * da Vista por Transportadoras. A tabela só mostra dados depois de um carrier estar seleccionado.
-   * Seletores: tenders_carriers_view.json → input[role='combobox'] (1.º = Carrier)
+   * Seletores: tenders_carriers_view.json → label "Transportador/Carrier" → input[role='combobox']
+   * Nota: não usamos índice numérico porque o dropdown "Fase" pode ou não estar presente.
    */
   public async selectFirstCarrierInDropdown(): Promise<void> {
-    // A Vista por Transportadoras tem 3 dropdowns: Fase | Transportador | Melhor Métrica
-    // O Transportador é o 2.º combobox (Fase pode ter "No options" em spot tenders)
+    // Localiza o combobox pelo label "Transportador *" / "Carrier *" — robusto ao número de dropdowns
     const carrierInput = await this.driver.wait(
-      until.elementLocated(By.xpath("(//input[@role='combobox'])[2]")),
+      until.elementLocated(By.xpath(
+        "//div[.//label[contains(normalize-space(),'Transportador') or contains(normalize-space(),'Carrier')]]" +
+        "//input[@role='combobox']"
+      )),
       portalConfig.timeoutMs,
       "Carrier/Transportador combobox not found in Carriers View"
     );
@@ -504,33 +507,30 @@ export class NavigationPage {
    * Nota: os checkboxes podem ter classe PrivateSwitchBase-input ou ser input[type="checkbox"] simples.
    */
   public async selectAllQuotesInTable(): Promise<void> {
-    // Procura tanto MUI Switch como MUI Checkbox — a coluna "Selecionar Cotação" usa input[type="checkbox"]
+    // Os checkboxes MUI têm o input[type="checkbox"] com opacity:0 — isDisplayed() retorna false.
+    // Solução: encontra o input no DOM, verifica .checked via JS, e clica no span pai visível.
     await this.driver.wait(async () => {
-      const inputs = await this.driver.findElements(
-        By.css(
-          "input[type='checkbox'], " +
-          "input.PrivateSwitchBase-input, " +
-          "input[class*='PrivateSwitchBase']"
-        )
-      );
+      const inputs = await this.driver.findElements(By.css("input[type='checkbox']"));
       for (const input of inputs) {
         try {
-          if (!(await input.isDisplayed().catch(() => false))) continue;
-          // Usa a propriedade JS .checked (mais fiável que getAttribute para checkboxes)
           const isChecked: boolean = await this.driver.executeScript(
             "return arguments[0].checked;", input
           ) as boolean;
           if (!isChecked) {
-            // Tenta clicar no wrapper MUI; se não existir, clica directamente no input
-            const clickTarget = await this.driver.executeScript(
-              "return arguments[0].closest('.MuiCheckbox-root, .MuiSwitch-root, .MuiFormControlLabel-root') || arguments[0].parentElement || arguments[0];",
+            // Sobe ao span MUI clicável (MuiCheckbox-root / MuiSwitch-root / parentElement)
+            const span = await this.driver.executeScript(
+              "return arguments[0].closest('span.MuiCheckbox-root, span.MuiSwitch-root, span.MuiButtonBase-root') " +
+              "|| arguments[0].parentElement;",
               input
             ) as ReturnType<typeof this.driver.findElement>;
-            await this.driver.executeScript("arguments[0].scrollIntoView({block:'center'});", clickTarget);
-            await this.driver.executeScript("arguments[0].click();", clickTarget);
-            await this.driver.sleep(200);
+            await this.driver.executeScript(
+              "arguments[0].scrollIntoView({block:'center', inline:'center'});", span
+            );
+            await this.driver.sleep(100);
+            await this.driver.executeScript("arguments[0].click();", span);
+            await this.driver.sleep(300);
           }
-        } catch { /* elemento removido do DOM após click, continua */ }
+        } catch { /* elemento removido do DOM após click — continua */ }
       }
       return true;
     }, portalConfig.timeoutMs, "Could not select quotes in table");
@@ -554,13 +554,15 @@ export class NavigationPage {
     await this.driver.wait(until.elementIsVisible(btn), portalConfig.timeoutMs);
     await btn.click();
 
-    // Aguarda que a tabela da Lanes View carregue (coluna "Carrier")
+    // Aguarda que a tabela da Lanes View carregue (qualquer coluna da tabela Lane)
     await this.driver.wait(
       until.elementLocated(By.xpath(
+        "//th[contains(@class,'viewLaneTable-header-cell')] | " +
+        "//th[normalize-space()='Origin' or normalize-space()='Origem'] | " +
         "//th[normalize-space()='Carrier' or normalize-space()='Transportadora']"
       )),
       portalConfig.timeoutMs,
-      "Lanes View table did not load (Carrier column not found)"
+      "Lanes View table did not load"
     );
     await this.driver.sleep(300);
   }
